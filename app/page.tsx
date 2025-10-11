@@ -22,6 +22,7 @@ export default function Home() {
       </div>
     );
 
+  console.log(menuByCategory);
   const categories = menuByCategory ? Object.keys(menuByCategory) : [];
 
   return (
