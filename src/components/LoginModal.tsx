@@ -15,7 +15,6 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
 interface LoginModalProps {
@@ -34,7 +33,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
 
   const login = useAuthStore((state) => state.login);
-  const router = useRouter();
 
   const roleConfig = selectedRole ? ROLE_CONFIGS[selectedRole] : null;
 
@@ -51,7 +49,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
     if (password === roleConfig.password) {
       login(selectedRole);
-      router.push(roleConfig.redirectPath);
+      // Non facciamo più il redirect - l'utente rimane sulla homepage
       onClose();
       setPassword("");
     } else {

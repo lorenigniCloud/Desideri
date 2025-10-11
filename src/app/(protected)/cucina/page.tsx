@@ -1,39 +1,52 @@
-"use client";
-
-import { AuthGuard } from "@/components/AuthGuard";
-import { Navbar } from "@/components/Navbar";
-import { Box, Container, Paper, Typography } from "@mui/material";
+import { DepartmentLayout } from "@/components/DepartmentLayout";
+import { PermissionWrapper } from "@/components/PermissionWrapper";
+import { Box, Button, Paper, Typography } from "@mui/material";
 
 export default function CucinaPage() {
   return (
-    <AuthGuard requiredRole="cuoca">
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <Container maxWidth="lg" sx={{ py: 4 }}>
-          <Box textAlign="center" mb={4}>
-            <Typography variant="h3" component="h1" gutterBottom>
-              👩‍🍳 Cucina
-            </Typography>
-            <Typography variant="h6" color="text.secondary">
-              Coordinamento della cucina
-            </Typography>
-          </Box>
+    <DepartmentLayout
+      department="cuoca"
+      title="Cucina"
+      icon="👩‍🍳"
+      description="Coordinamento della cucina"
+    >
+      <Paper sx={{ p: 4, textAlign: "center" }}>
+        <Typography variant="h5" gutterBottom>
+          Benvenuto nella sezione Cucina!
+        </Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          Qui potrai coordinare tutte le attività della cucina.
+        </Typography>
 
-          <Paper sx={{ p: 4, textAlign: "center" }}>
-            <Typography variant="h5" gutterBottom>
-              Benvenuta nella sezione Cucina!
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Qui potrai coordinare tutte le attività della cucina.
-            </Typography>
-            <Box mt={3}>
-              <Typography variant="body2" color="text.secondary">
-                🔧 Funzionalità in sviluppo...
-              </Typography>
-            </Box>
-          </Paper>
-        </Container>
-      </div>
-    </AuthGuard>
+        {/* Esempio di pulsanti con controllo permessi */}
+        <Box mt={3} display="flex" gap={2} justifyContent="center">
+          <PermissionWrapper requiredRole="cuoca" requireEdit={false}>
+            <Button variant="outlined" color="primary">
+              Visualizza Ordini Cucina
+            </Button>
+          </PermissionWrapper>
+
+          <PermissionWrapper
+            requiredRole="cuoca"
+            requireEdit={true}
+            fallback={
+              <Button variant="outlined" disabled>
+                Coordina Cucina (Solo Cuoca)
+              </Button>
+            }
+          >
+            <Button variant="contained" color="primary">
+              Coordina Cucina
+            </Button>
+          </PermissionWrapper>
+        </Box>
+
+        <Box mt={3}>
+          <Typography variant="body2" color="text.secondary">
+            🔧 Funzionalità in sviluppo...
+          </Typography>
+        </Box>
+      </Paper>
+    </DepartmentLayout>
   );
 }

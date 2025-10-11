@@ -1,42 +1,26 @@
 "use client";
 
 import { ROLE_CONFIGS, UserRole } from "@/types/auth";
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Container,
-  Typography,
-} from "@mui/material";
-import React, { useState } from "react";
-import { LoginModal } from "./LoginModal";
+import { Box, Card, CardContent, Container, Typography } from "@mui/material";
+import { useRouter } from "next/navigation";
+import React from "react";
 
-export const RoleSelector: React.FC = () => {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
+export const DepartmentSelector: React.FC = () => {
+  const router = useRouter();
 
-  const handleRoleSelect = (role: UserRole) => {
-    setSelectedRole(role);
-    setModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setModalOpen(false);
-    setSelectedRole(null);
+  const handleDepartmentSelect = (department: UserRole) => {
+    const config = ROLE_CONFIGS[department];
+    router.push(config.redirectPath);
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 8 }}>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box textAlign="center" mb={6}>
-        <Typography variant="h3" component="h1" gutterBottom>
-          🍽️ Ristorante Desideri
-        </Typography>
-        <Typography variant="h5" color="text.secondary" gutterBottom>
-          Sistema di Gestione Ordini
+        <Typography variant="h4" component="h2" gutterBottom>
+          Seleziona Reparto
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Seleziona il tuo ruolo per accedere al sistema
+          Scegli il reparto da visualizzare
         </Typography>
       </Box>
 
@@ -60,11 +44,13 @@ export const RoleSelector: React.FC = () => {
                 display: "flex",
                 flexDirection: "column",
                 transition: "transform 0.2s, box-shadow 0.2s",
+                cursor: "pointer",
                 "&:hover": {
                   transform: "translateY(-4px)",
                   boxShadow: 4,
                 },
               }}
+              onClick={() => handleDepartmentSelect(config.role)}
             >
               <CardContent sx={{ flexGrow: 1, textAlign: "center", p: 4 }}>
                 <Typography
@@ -88,35 +74,11 @@ export const RoleSelector: React.FC = () => {
                   {config.role === "bracerista" && "Prepara carni e grigliate"}
                   {config.role === "cuoca" && "Coordina la cucina"}
                 </Typography>
-
-                <Button
-                  variant="contained"
-                  size="large"
-                  fullWidth
-                  onClick={() => handleRoleSelect(config.role)}
-                  sx={{
-                    backgroundColor: config.color,
-                    py: 1.5,
-                    fontSize: "1.1rem",
-                    "&:hover": {
-                      backgroundColor: config.color,
-                      opacity: 0.8,
-                    },
-                  }}
-                >
-                  Accedi come {config.displayName}
-                </Button>
               </CardContent>
             </Card>
           </Box>
         ))}
       </Box>
-
-      <LoginModal
-        open={modalOpen}
-        onClose={handleCloseModal}
-        selectedRole={selectedRole}
-      />
     </Container>
   );
 };
