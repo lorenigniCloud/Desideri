@@ -1,3 +1,4 @@
+import { supabase } from "@/lib/supabase";
 import {
   ComandaCompleta,
   CreateComandaRequest,
@@ -9,9 +10,23 @@ export function useComande() {
   return useQuery<ComandaCompleta[]>({
     queryKey: ["comande"],
     queryFn: async () => {
-      const response = await fetch("/api/comande");
-      if (!response.ok) throw new Error("Errore nel caricamento delle comande");
-      return response.json();
+      const { data, error } = await supabase
+        .from("comanda")
+        .select(
+          `
+          *,
+          dettagli_comanda (
+            id,
+            quantita,
+            prezzo_unitario,
+            menu (nome, categoria)
+          )
+        `
+        )
+        .order("data_ordine", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
     },
   });
 }
@@ -21,13 +36,39 @@ export function useCreateComanda() {
 
   return useMutation({
     mutationFn: async (comandaData: CreateComandaRequest) => {
-      const response = await fetch("/api/comande", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(comandaData),
-      });
-      if (!response.ok) throw new Error("Errore nella creazione della comanda");
-      return response.json();
+      // Crea la comanda
+      const { data: comanda, error: comandaError } = await supabase
+        .from("comanda")
+        .insert([{ cliente: comandaData.cliente, note: comandaData.note }])
+        .select()
+        .single();
+
+      if (comandaError) throw comandaError;
+
+      // Aggiungi i dettagli
+      const dettagli = comandaData.piatti.map((piatto) => ({
+        comanda_id: comanda.id,
+        menu_id: piatto.menu_id,
+        quantita: piatto.quantita,
+        prezzo_unitario: piatto.prezzo_unitario,
+      }));
+
+      const { error: dettagliError } = await supabase
+        .from("dettagli_comanda")
+        .insert(dettagli);
+
+      if (dettagliError) throw dettagliError;
+
+      // Calcola il totale
+      const totale = comandaData.piatti.reduce(
+        (sum, piatto) => sum + piatto.quantita * piatto.prezzo_unitario,
+        0
+      );
+
+      // Aggiorna il totale
+      await supabase.from("comanda").update({ totale }).eq("id", comanda.id);
+
+      return comanda;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["comande"] });
@@ -40,14 +81,19 @@ export function useUpdateComanda() {
 
   return useMutation({
     mutationFn: async (comandaData: UpdateComandaRequest) => {
-      const response = await fetch("/api/comande", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(comandaData),
-      });
-      if (!response.ok)
-        throw new Error("Errore nell'aggiornamento della comanda");
-      return response.json();
+      const updateData: Partial<{ stato: string; note: string }> = {};
+      if (comandaData.stato) updateData.stato = comandaData.stato;
+      if (comandaData.note !== undefined) updateData.note = comandaData.note;
+
+      const { data, error } = await supabase
+        .from("comanda")
+        .update(updateData)
+        .eq("id", comandaData.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["comande"] });
