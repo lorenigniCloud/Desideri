@@ -1,7 +1,11 @@
 "use client";
 
+import { Navbar } from "@/components/Navbar";
+import { RoleSelector } from "@/components/RoleSelector";
+import { useAuth } from "@/hooks/useAuth";
 import { useComande } from "@/hooks/useComande";
 import { useMenuByCategory } from "@/hooks/useMenu";
+import { Box, CircularProgress, Typography } from "@mui/material";
 import { useState } from "react";
 
 export default function Home() {
@@ -12,6 +16,31 @@ export default function Home() {
   } = useMenuByCategory();
   const { data: comande, isLoading: comandeLoading } = useComande();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const { isAuthenticated, isHydrated } = useAuth();
+
+  // Mostra loading durante l'idratazione
+  if (!isHydrated) {
+    return (
+      <Box
+        display="flex"
+        flexDirection="column"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh"
+        gap={2}
+      >
+        <CircularProgress size={60} />
+        <Typography variant="h6" color="text.secondary">
+          Caricamento...
+        </Typography>
+      </Box>
+    );
+  }
+
+  // Se l'utente non è autenticato, mostra il selettore di ruoli
+  if (!isAuthenticated) {
+    return <RoleSelector />;
+  }
 
   if (menuLoading)
     return <div className="p-8 text-center">Caricamento menu...</div>;
@@ -29,17 +58,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Ristorante - Gestione Ordini
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Sistema di gestione ordini e menu
-          </p>
-        </div>
-      </header>
+      <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Navigation */}

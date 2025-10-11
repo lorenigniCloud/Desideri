@@ -1,4 +1,5 @@
 // Esporta tutti i tipi
+export * from "./auth";
 export * from "./comanda";
 export * from "./menu";
 
