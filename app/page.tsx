@@ -75,7 +75,7 @@ export default function Home() {
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
               {selectedCategory || "Menu Completo"}
             </h2>
-
+            <></>
             {menuByCategory && (
               <div className="space-y-8">
                 {Object.entries(menuByCategory)
