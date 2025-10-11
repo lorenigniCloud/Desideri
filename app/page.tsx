@@ -23,6 +23,7 @@ export default function Home() {
     );
 
   console.log(menuByCategory);
+  console.log(menuByCategory);
   const categories = menuByCategory ? Object.keys(menuByCategory) : [];
 
   return (
