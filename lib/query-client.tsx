@@ -10,7 +10,7 @@ export function QueryProvider({ children }: { readonly children: ReactNode }) {
         defaultOptions: {
           queries: {
             staleTime: 5 * 60 * 1000, // 5 minuti
-            cacheTime: 10 * 60 * 1000, // 10 minuti
+            gcTime: 10 * 60 * 1000, // 10 minuti (cacheTime è deprecato in v5)
             retry: 3,
             refetchOnWindowFocus: false,
           },
