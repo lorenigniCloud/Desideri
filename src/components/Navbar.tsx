@@ -25,11 +25,18 @@ export const Navbar: React.FC = () => {
   return (
     <AppBar position="static" sx={{ backgroundColor: roleConfig.color }}>
       <Toolbar>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          🍽️ Ristorante Desideri
-        </Typography>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          width="100%"
+        >
+          {/* Sinistra: Titolo */}
+          <Typography variant="h6" component="div">
+            Desideri
+          </Typography>
 
-        <Box display="flex" alignItems="center" gap={2}>
+          {/* Centro: Ruolo */}
           <Chip
             icon={<span>{roleConfig.icon}</span>}
             label={roleConfig.displayName}
@@ -41,6 +48,7 @@ export const Navbar: React.FC = () => {
             }}
           />
 
+          {/* Destra: Logout */}
           <Button
             color="inherit"
             onClick={handleLogout}

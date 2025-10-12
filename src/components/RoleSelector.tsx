@@ -1,14 +1,7 @@
 "use client";
 
 import { ROLE_CONFIGS, UserRole } from "@/types/auth";
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Container,
-  Typography,
-} from "@mui/material";
+import { Box, Card, CardContent, Container, Typography } from "@mui/material";
 import React, { useState } from "react";
 import { LoginModal } from "./LoginModal";
 
@@ -27,86 +20,78 @@ export const RoleSelector: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 8 }}>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box textAlign="center" mb={6}>
-        <Typography variant="h3" component="h1" gutterBottom>
-          🍽️ Ristorante Desideri
-        </Typography>
-        <Typography variant="h5" color="text.secondary" gutterBottom>
+        <Typography variant="h3" color="text.primary" gutterBottom>
           Sistema di Gestione Ordini
         </Typography>
-        <Typography variant="body1" color="text.secondary">
+        <Typography variant="h6" color="text.secondary">
           Seleziona il tuo ruolo per accedere al sistema
         </Typography>
       </Box>
 
       <Box
         sx={{
-          display: "grid",
-          gridTemplateColumns: {
-            xs: "1fr",
-            sm: "repeat(2, 1fr)",
-            md: "repeat(3, 1fr)",
-          },
-          gap: 4,
-          justifyItems: "center",
+          display: "flex",
+          flexDirection: "column",
+          gap: 3,
+          alignItems: "center",
+          maxWidth: 400,
+          mx: "auto",
         }}
       >
         {Object.values(ROLE_CONFIGS).map((config) => (
-          <Box key={config.role} sx={{ width: "100%", maxWidth: 400 }}>
+          <Box key={config.role} sx={{ width: "100%", maxWidth: 250 }}>
             <Card
               sx={{
                 height: "100%",
                 display: "flex",
                 flexDirection: "column",
+                borderRadius: "50%",
+                aspectRatio: "1",
                 transition: "transform 0.2s, box-shadow 0.2s",
+                backgroundColor: config.color,
                 "&:hover": {
                   transform: "translateY(-4px)",
                   boxShadow: 4,
                 },
+                cursor: "pointer",
               }}
+              onClick={() => handleRoleSelect(config.role)}
             >
-              <CardContent sx={{ flexGrow: 1, textAlign: "center", p: 4 }}>
+              <CardContent
+                sx={{
+                  flexGrow: 1,
+                  textAlign: "center",
+                  p: 2,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: "100%",
+                }}
+              >
                 <Typography
                   variant="h2"
                   component="div"
-                  sx={{ fontSize: "4rem", mb: 2 }}
+                  sx={{
+                    fontSize: "3rem",
+                    mb: 1,
+                    color: "white",
+                  }}
                 >
                   {config.icon}
                 </Typography>
-
-                <Typography variant="h5" component="h2" gutterBottom>
-                  {config.displayName}
-                </Typography>
-
                 <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ mb: 3 }}
-                >
-                  {config.role === "cassiere" && "Gestisci ordini e pagamenti"}
-                  {config.role === "bracerista" && "Prepara carni e grigliate"}
-                  {config.role === "cuoca" && "Coordina la cucina"}
-                  {config.role === "cameriere" && "Visualizza le tue comande"}
-                </Typography>
-
-                <Button
-                  variant="contained"
-                  size="large"
-                  fullWidth
-                  onClick={() => handleRoleSelect(config.role)}
+                  variant="h6"
+                  component="h2"
                   sx={{
-                    backgroundColor: config.color,
-                    py: 1.5,
-                    fontSize: "1.1rem",
-                    "&:hover": {
-                      backgroundColor: config.color,
-                      opacity: 0.8,
-                    },
+                    color: "white",
+                    fontWeight: "bold",
                   }}
                 >
-                  Accedi come {config.displayName}
-                </Button>
+                  {config.displayName}
+                </Typography>
               </CardContent>
             </Card>
           </Box>
