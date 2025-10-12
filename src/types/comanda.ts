@@ -1,3 +1,5 @@
+import { StatoComanda } from "@/lib/supabase";
+
 export interface PiattoComanda {
   menu_id: number;
   quantita: number;
@@ -7,16 +9,13 @@ export interface PiattoComanda {
 export interface CreateComandaRequest {
   cliente: string;
   piatti: PiattoComanda[];
+  nome_cameriere: string;
+  tavolo: number;
   note?: string;
 }
 
 export interface UpdateComandaRequest {
   id: number;
-  stato?:
-    | "in_attesa"
-    | "in_preparazione"
-    | "pronto"
-    | "consegnato"
-    | "cancellato";
+  stato?: StatoComanda;
   note?: string;
 }
