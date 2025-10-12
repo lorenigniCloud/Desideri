@@ -73,6 +73,7 @@ export const DepartmentSelector: React.FC = () => {
                   {config.role === "cassiere" && "Gestisci ordini e pagamenti"}
                   {config.role === "bracerista" && "Prepara carni e grigliate"}
                   {config.role === "cuoca" && "Coordina la cucina"}
+                  {config.role === "cameriere" && "Visualizza le tue comande"}
                 </Typography>
               </CardContent>
             </Card>

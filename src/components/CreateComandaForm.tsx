@@ -3,6 +3,7 @@
 import { MenuItemCard } from "@/components/MenuItemCard";
 import { useCreateComanda } from "@/hooks/useComande";
 import { useMenuByCategory } from "@/hooks/useMenu";
+import { CAMERIERI } from "@/lib/supabase";
 import { CreateComandaRequest, PiattoComanda } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -18,7 +19,11 @@ import {
   Button,
   Chip,
   Divider,
+  FormControl,
+  InputLabel,
+  MenuItem,
   Paper,
+  Select,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
@@ -54,7 +59,7 @@ export const CreateComandaForm: React.FC = () => {
     resolver: zodResolver(comandaSchema),
     defaultValues: {
       cliente: "",
-      nome_cameriere: "",
+      nome_cameriere: CAMERIERI[0],
       tavolo: 1,
       note: "",
     },
@@ -189,14 +194,25 @@ export const CreateComandaForm: React.FC = () => {
                   name="nome_cameriere"
                   control={control}
                   render={({ field }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      label="Nome Cameriere"
-                      error={!!errors.nome_cameriere}
-                      helperText={errors.nome_cameriere?.message}
-                      required
-                    />
+                    <FormControl fullWidth error={!!errors.nome_cameriere}>
+                      <InputLabel>Cameriere</InputLabel>
+                      <Select {...field} label="Cameriere" required>
+                        {CAMERIERI.map((cameriere) => (
+                          <MenuItem key={cameriere} value={cameriere}>
+                            {cameriere}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {errors.nome_cameriere && (
+                        <Typography
+                          variant="caption"
+                          color="error"
+                          sx={{ mt: 0.5, ml: 1.5 }}
+                        >
+                          {errors.nome_cameriere.message}
+                        </Typography>
+                      )}
+                    </FormControl>
                   )}
                 />
 

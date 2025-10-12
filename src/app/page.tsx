@@ -8,6 +8,9 @@ import { usePermissionsStore } from "@/stores/permissionsStore";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { useEffect } from "react";
 
+// next step -> lavorare sulle componenti
+// inserire reparto camierere solo da FE
+// separare reparto cassa
 export default function Home() {
   const { isAuthenticated, isHydrated, role } = useAuth();
   const { setUserRole } = usePermissionsStore();
