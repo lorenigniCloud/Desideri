@@ -84,7 +84,7 @@ export default function ProtectedTemplate({
           <Typography variant="body1" color="text.secondary" align="center">
             Non hai i permessi per visualizzare questa sezione.
             <br />
-            Contatta l'amministratore per ottenere l'accesso.
+            Contatta l&apos;amministratore per ottenere l&apos;accesso.
           </Typography>
         </Box>
       }

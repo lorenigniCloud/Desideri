@@ -190,7 +190,16 @@ export const ComandaCard: React.FC<ComandaCardProps> = ({
           <Box textAlign="right">
             <Chip
               label={getStatusLabel(comanda.stato)}
-              color={getStatusColor(comanda.stato) as any}
+              color={
+                getStatusColor(comanda.stato) as
+                  | "default"
+                  | "primary"
+                  | "secondary"
+                  | "error"
+                  | "info"
+                  | "success"
+                  | "warning"
+              }
               size="small"
               sx={{ mb: 1 }}
             />
@@ -291,7 +300,16 @@ export const ComandaCard: React.FC<ComandaCardProps> = ({
                   key={action.newStatus}
                   onClick={() => handleStatusChange(action.newStatus)}
                   disabled={updateComanda.isPending}
-                  color={action.color as any}
+                  color={
+                    action.color as
+                      | "inherit"
+                      | "primary"
+                      | "secondary"
+                      | "success"
+                      | "error"
+                      | "info"
+                      | "warning"
+                  }
                 >
                   {action.label}
                 </Button>
