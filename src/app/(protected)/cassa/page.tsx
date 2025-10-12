@@ -1,13 +1,26 @@
 "use client";
 
 import { CassaPageLayout } from "@/components/CassaPageLayout";
+import { ComandaCard } from "@/components/ComandaCard";
 import { CreateComandaForm } from "@/components/CreateComandaForm";
 import { PermissionWrapper } from "@/components/PermissionWrapper";
-import { Box, Paper, Tab, Tabs, Typography } from "@mui/material";
+import { useAuth } from "@/hooks/useAuth";
+import { useComande } from "@/hooks/useComande";
+import {
+  Alert,
+  Box,
+  CircularProgress,
+  Paper,
+  Tab,
+  Tabs,
+  Typography,
+} from "@mui/material";
 import { useState } from "react";
 
 function CassaContent() {
   const [tabValue, setTabValue] = useState(0);
+  const { data: comande, isLoading, error } = useComande();
+  const { role } = useAuth();
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -44,21 +57,47 @@ function CassaContent() {
       )}
 
       {tabValue === 1 && (
-        <Paper sx={{ p: 4, textAlign: "center" }}>
-          <Typography variant="h5" gutterBottom>
+        <Box>
+          <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
             📋 Ordini Attivi
           </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Lista degli ordini in corso...
-          </Typography>
-          <Box mt={2}>
-            <Typography variant="body2" color="text.secondary">
-              🔧 Funzionalità in sviluppo...
-            </Typography>
-          </Box>
-        </Paper>
-      )}
 
+          {isLoading && (
+            <Box display="flex" justifyContent="center" p={4}>
+              <CircularProgress />
+            </Box>
+          )}
+
+          {error && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              Errore nel caricamento delle comande
+            </Alert>
+          )}
+
+          {comande && comande.length === 0 && (
+            <Paper sx={{ p: 4, textAlign: "center" }}>
+              <Typography variant="h6" gutterBottom>
+                Nessuna comanda trovata
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Non ci sono comande nel sistema
+              </Typography>
+            </Paper>
+          )}
+
+          {comande && comande.length > 0 && (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {comande.map((comanda) => (
+                <ComandaCard
+                  key={comanda.id}
+                  comanda={comanda}
+                  currentUserRole={role || "cassiere"}
+                />
+              ))}
+            </Box>
+          )}
+        </Box>
+      )}
     </CassaPageLayout>
   );
 }

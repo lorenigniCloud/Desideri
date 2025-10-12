@@ -1,18 +1,22 @@
 "use client";
 
-import { MenuItemCard } from "@/components/MenuItemCard";
+import { MenuItemSimple } from "@/components/MenuItemSimple";
 import { useCreateComanda } from "@/hooks/useComande";
 import { useMenuByCategory } from "@/hooks/useMenu";
 import { CAMERIERI } from "@/lib/supabase";
 import { CreateComandaRequest, PiattoComanda } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  ExpandMore,
   Note,
   Person,
   ShoppingCart,
   TableRestaurant,
 } from "@mui/icons-material";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Alert,
   Box,
   Button,
@@ -23,8 +27,6 @@ import {
   MenuItem,
   Select,
   TextField,
-  ToggleButton,
-  ToggleButtonGroup,
   Typography,
 } from "@mui/material";
 import React, { useMemo, useState } from "react";
@@ -62,7 +64,7 @@ type ComandaFormData = {
 
 export const CreateComandaForm: React.FC = () => {
   const [quantities, setQuantities] = useState<Record<number, number>>({});
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [showItemsError, setShowItemsError] = useState(false);
 
   const { data: menuByCategory, isLoading: menuLoading } = useMenuByCategory();
   const createComanda = useCreateComanda();
@@ -71,12 +73,12 @@ export const CreateComandaForm: React.FC = () => {
     control,
     handleSubmit,
     reset,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useForm<ComandaFormData>({
     resolver: zodResolver(comandaSchema),
     defaultValues: {
       cliente: "",
-      nome_cameriere: CAMERIERI[0],
+      nome_cameriere: "",
       tavolo: 1,
       note: "",
     },
@@ -115,26 +117,33 @@ export const CreateComandaForm: React.FC = () => {
     return { totalPrice: total, selectedItems: items };
   }, [quantities, menuByCategory]);
 
-  // Filtro per categoria
-  const filteredMenu = useMemo(() => {
-    if (!menuByCategory) return {};
-    if (selectedCategory === "all") return menuByCategory;
+  // Validazione per il pulsante (solo campi form, non piatti)
+  const isFormValid = useMemo(() => {
+    return !errors.cliente && !errors.nome_cameriere && !errors.tavolo;
+  }, [errors]);
 
-    return {
-      [selectedCategory]: menuByCategory[selectedCategory] || [],
-    };
-  }, [menuByCategory, selectedCategory]);
-
-  // Categorie disponibili
-  const availableCategories = useMemo(() => {
-    if (!menuByCategory) return [];
-    return Object.keys(menuByCategory);
-  }, [menuByCategory]);
+  const getValidationMessage = () => {
+    if (errors.cliente) {
+      return "Nome cliente è obbligatorio";
+    }
+    if (errors.nome_cameriere) {
+      return "Seleziona un cameriere";
+    }
+    if (errors.tavolo) {
+      return "Numero tavolo è obbligatorio";
+    }
+    return null;
+  };
 
   const onSubmit = async (data: ComandaFormData) => {
+    // Controllo piatti selezionati solo all'onSubmit
     if (selectedItems.length === 0) {
+      setShowItemsError(true);
       return;
     }
+
+    // Nascondi errore piatti se ci sono piatti selezionati
+    setShowItemsError(false);
 
     const comandaData: CreateComandaRequest = {
       cliente: data.cliente,
@@ -151,6 +160,7 @@ export const CreateComandaForm: React.FC = () => {
       // Reset form e quantità
       reset();
       setQuantities({});
+      setShowItemsError(false);
     } catch (error) {
       console.error("Errore nella creazione della comanda:", error);
     }
@@ -278,81 +288,70 @@ export const CreateComandaForm: React.FC = () => {
           </Box>
         </Box>
 
-        {/* Menu - Semplificato */}
+        {/* Menu - Con Accordion */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
             📋 Menu
           </Typography>
-          
-          <Box sx={{ mb: 2, display: "flex", flexWrap: "wrap", gap: 1 }}>
-            <ToggleButtonGroup
-              value={selectedCategory}
-              exclusive
-              onChange={(_, newCategory) =>
-                newCategory && setSelectedCategory(newCategory)
-              }
-              size="small"
-            >
-              <ToggleButton value="all">Tutti</ToggleButton>
-              {availableCategories.map((category) => (
-                <ToggleButton key={category} value={category}>
-                  {category}
-                </ToggleButton>
-              ))}
-            </ToggleButtonGroup>
-          </Box>
 
-          {Object.entries(filteredMenu).map(([categoria, items]) => (
-            <Box key={categoria} mb={4}>
-              <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
-                {categoria} ({items.length} piatti)
-              </Typography>
-
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: {
-                    xs: "1fr",
-                    sm: "repeat(2, 1fr)",
-                    lg: "repeat(3, 1fr)",
-                  },
-                  gap: 3,
-                }}
-              >
-                {items.map((item) => (
-                  <MenuItemCard
-                    key={item.id}
-                    item={item}
-                    quantity={quantities[item.id] || 0}
-                    onQuantityChange={handleQuantityChange}
-                  />
-                ))}
-              </Box>
-            </Box>
-          ))}
+          {menuByCategory &&
+            Object.entries(menuByCategory).map(([categoria, items]) => (
+              <Accordion key={categoria}>
+                <AccordionSummary
+                  expandIcon={<ExpandMore />}
+                  sx={{
+                    bgcolor: "action.hover",
+                    "&:hover": { bgcolor: "action.selected" },
+                  }}
+                >
+                  <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                    {categoria}
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails sx={{ p: 0 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 1,
+                      p: 2,
+                    }}
+                  >
+                    {items.map((item) => (
+                      <MenuItemSimple
+                        key={item.id}
+                        item={item}
+                        quantity={quantities[item.id] || 0}
+                        onQuantityChange={(quantity) =>
+                          handleQuantityChange(item.id, quantity)
+                        }
+                      />
+                    ))}
+                  </Box>
+                </AccordionDetails>
+              </Accordion>
+            ))}
         </Box>
 
         {/* Riepilogo Comanda - Semplificato */}
-        <Box sx={{ 
-          position: { xs: "static", lg: "sticky" }, 
-          top: 20,
-          bgcolor: "background.paper",
-          p: 2,
-          borderRadius: 1,
-          border: 1,
-          borderColor: "divider"
-        }}>
+        <Box
+          sx={{
+            position: { xs: "static", lg: "sticky" },
+            top: 20,
+            bgcolor: "background.paper",
+            p: 2,
+            borderRadius: 1,
+            border: 1,
+            borderColor: "divider",
+          }}
+        >
           <Typography variant="h6" gutterBottom>
             <ShoppingCart sx={{ mr: 1, verticalAlign: "middle" }} />
             Riepilogo Comanda
           </Typography>
 
           {selectedItems.length === 0 ? (
-            <Typography
-              color="text.secondary"
-              align="center"
-              sx={{ py: 4 }}
-            >
+            <Typography color="text.secondary" align="center" sx={{ py: 4 }}>
               Nessun piatto selezionato
             </Typography>
           ) : (
@@ -388,8 +387,8 @@ export const CreateComandaForm: React.FC = () => {
                       </Typography>
                     </Box>
                     <Typography variant="body2" color="text.secondary">
-                      €{item.prezzo_unitario.toFixed(2)} x {item.quantita} =
-                      €{(item.prezzo_unitario * item.quantita).toFixed(2)}
+                      €{item.prezzo_unitario.toFixed(2)} x {item.quantita} = €
+                      {(item.prezzo_unitario * item.quantita).toFixed(2)}
                     </Typography>
                     <Divider sx={{ mt: 1 }} />
                   </Box>
@@ -416,8 +415,14 @@ export const CreateComandaForm: React.FC = () => {
             </Alert>
           )}
 
-          {selectedItems.length === 0 && (
-            <Alert severity="info" sx={{ mt: 2 }}>
+          {!isFormValid && getValidationMessage() && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              {getValidationMessage()}
+            </Alert>
+          )}
+
+          {showItemsError && (
+            <Alert severity="error" sx={{ mt: 2 }}>
               Seleziona almeno un piatto per creare la comanda
             </Alert>
           )}
@@ -427,11 +432,7 @@ export const CreateComandaForm: React.FC = () => {
             variant="contained"
             fullWidth
             size="large"
-            disabled={
-              !isValid ||
-              selectedItems.length === 0 ||
-              createComanda.isPending
-            }
+            disabled={createComanda.isPending}
             sx={{ mt: 2 }}
           >
             {createComanda.isPending ? "Creazione..." : "Crea Comanda"}
