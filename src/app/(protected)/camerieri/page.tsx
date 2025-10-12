@@ -69,7 +69,11 @@ function CamerieriContent() {
     return (
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {filteredComande.map((comanda) => (
-          <ComandaCard key={comanda.id} comanda={comanda} />
+          <ComandaCard
+            key={comanda.id}
+            comanda={comanda}
+            currentUserRole="cameriere"
+          />
         ))}
       </Box>
     );
