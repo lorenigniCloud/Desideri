@@ -1,17 +1,10 @@
 "use client";
 
 import { ComandaCard } from "@/components/ComandaCard";
-import { DepartmentLayout } from "@/components/DepartmentLayout";
+import { RepartoPageLayout } from "@/components/RepartoPageLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { useComande } from "@/hooks/useComande";
-import {
-  Alert,
-  Box,
-  Chip,
-  CircularProgress,
-  Paper,
-  Typography,
-} from "@mui/material";
+import { Alert, Box, CircularProgress, Paper, Typography } from "@mui/material";
 import { useMemo } from "react";
 
 function BraceContent() {
@@ -70,32 +63,19 @@ function BraceContent() {
   }
 
   return (
-    <>
-      <Paper sx={{ mb: 3, p: 2 }}>
-        <Box display="flex" alignItems="center" gap={1}>
-          <Typography variant="h6">🍖 Comande Brace</Typography>
-          <Chip
-            label={filteredComande.brace.length}
-            size="small"
-            color="primary"
-          />
-        </Box>
-      </Paper>
-
+    <RepartoPageLayout
+      title="Brace"
+      icon="🍖"
+      description="Preparazione carni e grigliate"
+      department="bracerista"
+      comandeCount={filteredComande.brace.length}
+      comandeLabel="🍖 Comande Brace"
+    >
       {getTabContent()}
-    </>
+    </RepartoPageLayout>
   );
 }
 
 export default function BracePage() {
-  return (
-    <DepartmentLayout
-      department="bracerista"
-      title="Brace"
-      icon="🍖"
-      description="Preparazione carni e grigliate"
-    >
-      <BraceContent />
-    </DepartmentLayout>
-  );
+  return <BraceContent />;
 }

@@ -1,17 +1,10 @@
 "use client";
 
 import { ComandaCard } from "@/components/ComandaCard";
-import { DepartmentLayout } from "@/components/DepartmentLayout";
+import { RepartoPageLayout } from "@/components/RepartoPageLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { useComande } from "@/hooks/useComande";
-import {
-  Alert,
-  Box,
-  Chip,
-  CircularProgress,
-  Paper,
-  Typography,
-} from "@mui/material";
+import { Alert, Box, CircularProgress, Paper, Typography } from "@mui/material";
 import { useMemo } from "react";
 
 function CucinaContent() {
@@ -71,32 +64,19 @@ function CucinaContent() {
   }
 
   return (
-    <>
-      <Paper sx={{ mb: 3, p: 2 }}>
-        <Box display="flex" alignItems="center" gap={1}>
-          <Typography variant="h6">👩‍🍳 Comande Cucina</Typography>
-          <Chip
-            label={filteredComande.cucina.length}
-            size="small"
-            color="primary"
-          />
-        </Box>
-      </Paper>
-
+    <RepartoPageLayout
+      title="Cucina"
+      icon="👩‍🍳"
+      description="Coordinamento della cucina"
+      department="cuoca"
+      comandeCount={filteredComande.cucina.length}
+      comandeLabel="👩‍🍳 Comande Cucina"
+    >
       {getTabContent()}
-    </>
+    </RepartoPageLayout>
   );
 }
 
 export default function CucinaPage() {
-  return (
-    <DepartmentLayout
-      department="cuoca"
-      title="Cucina"
-      icon="👩‍🍳"
-      description="Coordinamento della cucina"
-    >
-      <CucinaContent />
-    </DepartmentLayout>
-  );
+  return <CucinaContent />;
 }

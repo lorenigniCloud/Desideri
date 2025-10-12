@@ -1,7 +1,7 @@
 "use client";
 
+import { CassaPageLayout } from "@/components/CassaPageLayout";
 import { CreateComandaForm } from "@/components/CreateComandaForm";
-import { DepartmentLayout } from "@/components/DepartmentLayout";
 import { PermissionWrapper } from "@/components/PermissionWrapper";
 import { Box, Paper, Tab, Tabs, Typography } from "@mui/material";
 import { useState } from "react";
@@ -14,7 +14,12 @@ function CassaContent() {
   };
 
   return (
-    <>
+    <CassaPageLayout
+      title="Cassa"
+      icon="💰"
+      description="Gestione ordini e pagamenti"
+      department="cassiere"
+    >
       <Paper sx={{ mb: 3 }}>
         <Tabs value={tabValue} onChange={handleTabChange} centered>
           <Tab label="📝 Nuova Comanda" />
@@ -70,19 +75,10 @@ function CassaContent() {
           </Box>
         </Paper>
       )}
-    </>
+    </CassaPageLayout>
   );
 }
 
 export default function CassaPage() {
-  return (
-    <DepartmentLayout
-      department="cassiere"
-      title="Cassa"
-      icon="💰"
-      description="Gestione ordini e pagamenti"
-    >
-      <CassaContent />
-    </DepartmentLayout>
-  );
+  return <CassaContent />;
 }

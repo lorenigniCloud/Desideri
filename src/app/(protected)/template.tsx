@@ -22,6 +22,7 @@ const ROUTE_PERMISSIONS: Record<string, UserRole> = {
 export default function ProtectedTemplate({
   children,
 }: ProtectedTemplateProps) {
+  console.log("ProtectedTemplate");
   const { isAuthenticated, isHydrated, role } = useAuth();
   const { setUserRole } = usePermissionsStore();
   const pathname = usePathname();
