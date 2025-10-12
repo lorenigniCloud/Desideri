@@ -36,12 +36,12 @@ export const ComandaCard: React.FC<ComandaCardProps> = ({
     switch (stato) {
       case "nuovo":
         return "info";
-      case "in_brace":
-      case "in_cucina":
+      case "comanda_ricevuta":
         return "warning";
-      case "brace_pronto":
-      case "cucina_pronto":
+      case "comanda_preparata":
         return "success";
+      case "comanda_conclusa":
+        return "primary";
       case "servito":
         return "default";
       case "cancellato":
@@ -54,10 +54,9 @@ export const ComandaCard: React.FC<ComandaCardProps> = ({
   const getStatusLabel = (stato: StatoComanda) => {
     const labels: Record<StatoComanda, string> = {
       nuovo: "Nuovo",
-      in_brace: "In Brace",
-      brace_pronto: "Brace Pronto",
-      in_cucina: "In Cucina",
-      cucina_pronto: "Cucina Pronto",
+      comanda_ricevuta: "Comanda Ricevuta",
+      comanda_preparata: "Comanda Preparata",
+      comanda_conclusa: "Comanda Conclusa",
       servito: "Servito",
       cancellato: "Cancellato",
     };
@@ -71,40 +70,55 @@ export const ComandaCard: React.FC<ComandaCardProps> = ({
       color?: string;
     }[] = [];
 
+    // Azioni per bracerista (solo se la comanda ha piatti brace)
     if (currentUserRole === "bracerista" && reparto === "brace") {
       if (stato === "nuovo") {
         actions.push({
-          label: "Inizia Preparazione",
-          newStatus: "in_brace",
+          label: "Ricevi Comanda",
+          newStatus: "comanda_ricevuta",
           color: "primary",
         });
-      } else if (stato === "in_brace") {
+      } else if (stato === "comanda_ricevuta") {
         actions.push({
-          label: "Segna Pronto",
-          newStatus: "brace_pronto",
+          label: "Prepara Comanda",
+          newStatus: "comanda_preparata",
           color: "success",
+        });
+      } else if (stato === "comanda_preparata") {
+        actions.push({
+          label: "Concludi Comanda",
+          newStatus: "comanda_conclusa",
+          color: "info",
         });
       }
     }
 
+    // Azioni per cuoca (solo se la comanda ha piatti cucina)
     if (currentUserRole === "cuoca" && reparto === "cucina") {
       if (stato === "nuovo") {
         actions.push({
-          label: "Inizia Preparazione",
-          newStatus: "in_cucina",
+          label: "Ricevi Comanda",
+          newStatus: "comanda_ricevuta",
           color: "primary",
         });
-      } else if (stato === "in_cucina") {
+      } else if (stato === "comanda_ricevuta") {
         actions.push({
-          label: "Segna Pronto",
-          newStatus: "cucina_pronto",
+          label: "Prepara Comanda",
+          newStatus: "comanda_preparata",
           color: "success",
+        });
+      } else if (stato === "comanda_preparata") {
+        actions.push({
+          label: "Concludi Comanda",
+          newStatus: "comanda_conclusa",
+          color: "info",
         });
       }
     }
 
+    // Azioni per cassiere
     if (currentUserRole === "cassiere") {
-      if (stato === "brace_pronto" || stato === "cucina_pronto") {
+      if (stato === "comanda_conclusa") {
         actions.push({
           label: "Segna Servito",
           newStatus: "servito",
@@ -144,11 +158,23 @@ export const ComandaCard: React.FC<ComandaCardProps> = ({
     });
   };
 
-  const availableActions = getAvailableActions(comanda.stato, comanda.reparto);
+  // Determina se l'utente può modificare questa comanda basandosi sui dettagli
+  const hasBraceItems = comanda.dettagli_comanda.some(
+    (d) => d.reparto === "brace"
+  );
+  const hasCucinaItems = comanda.dettagli_comanda.some(
+    (d) => d.reparto === "cucina"
+  );
+
+  const availableActions = getAvailableActions(
+    comanda.stato,
+    hasBraceItems ? "brace" : hasCucinaItems ? "cucina" : "cassa"
+  );
+
   const canModify =
     currentUserRole === "cassiere" ||
-    (currentUserRole === "bracerista" && comanda.reparto === "brace") ||
-    (currentUserRole === "cuoca" && comanda.reparto === "cucina");
+    (currentUserRole === "bracerista" && hasBraceItems) ||
+    (currentUserRole === "cuoca" && hasCucinaItems);
 
   return (
     <Card
@@ -227,9 +253,21 @@ export const ComandaCard: React.FC<ComandaCardProps> = ({
           <Box display="flex" alignItems="center" gap={0.5}>
             <Restaurant fontSize="small" />
             <Typography variant="body2">
-              Reparto:{" "}
-              {comanda.reparto.charAt(0).toUpperCase() +
-                comanda.reparto.slice(1)}
+              Reparti:{" "}
+              {(() => {
+                const reparti = Array.from(
+                  new Set(
+                    comanda.dettagli_comanda
+                      .map((d) => d.reparto)
+                      .filter(Boolean)
+                  )
+                );
+                return reparti.length > 0
+                  ? reparti
+                      .map((r) => r.charAt(0).toUpperCase() + r.slice(1))
+                      .join(", ")
+                  : "Non assegnato";
+              })()}
             </Typography>
           </Box>
         </Box>
@@ -325,8 +363,22 @@ export const ComandaCard: React.FC<ComandaCardProps> = ({
               color="text.secondary"
               fontStyle="italic"
             >
-              ⚠️ Solo gli utenti del reparto {comanda.reparto} possono
-              modificare questa comanda
+              ⚠️ Solo gli utenti dei reparti{" "}
+              {(() => {
+                const reparti = Array.from(
+                  new Set(
+                    comanda.dettagli_comanda
+                      .map((d) => d.reparto)
+                      .filter(Boolean)
+                  )
+                );
+                return reparti.length > 0
+                  ? reparti
+                      .map((r) => r.charAt(0).toUpperCase() + r.slice(1))
+                      .join(", ")
+                  : "Non assegnato";
+              })()}{" "}
+              possono modificare questa comanda
             </Typography>
           </Box>
         )}

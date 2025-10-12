@@ -10,49 +10,26 @@ import {
   Chip,
   CircularProgress,
   Paper,
-  Tab,
-  Tabs,
   Typography,
 } from "@mui/material";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 function BraceContent() {
-  const [activeTab, setActiveTab] = useState(0);
   const { role } = useAuth();
   const { data: comande, isLoading, error } = useComande();
 
-  // Filtri per le comande
   const filteredComande = useMemo(() => {
-    if (!comande) return { all: [], brace: [], priority: [] };
+    if (!comande) return { brace: [] };
 
-    console.log(
-      "🔍 Debug comande:",
-      comande.map((c) => ({ id: c.id, reparto: c.reparto, stato: c.stato }))
+    const brace = comande.filter((c) =>
+      c.dettagli_comanda.some((d) => d.reparto === "brace")
     );
 
-    const all = comande;
-    const brace = comande.filter((c) => c.reparto === "brace");
-    const priority = comande.filter(
-      (c) =>
-        c.stato === "nuovo" ||
-        c.stato === "in_brace" ||
-        (c.reparto === "brace" && c.stato === "brace_pronto")
-    );
-
-    console.log("🍖 Comande brace:", brace.length);
-
-    return { all, brace, priority };
+    return { brace };
   }, [comande]);
 
   const getTabContent = () => {
-    let comandesToShow;
-    if (activeTab === 0) {
-      comandesToShow = filteredComande.priority;
-    } else if (activeTab === 1) {
-      comandesToShow = filteredComande.brace;
-    } else {
-      comandesToShow = filteredComande.all;
-    }
+    const comandesToShow = filteredComande.brace;
 
     if (comandesToShow.length === 0) {
       return (
@@ -61,9 +38,7 @@ function BraceContent() {
             Nessuna comanda trovata
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            {activeTab === 0 && "Non ci sono comande prioritarie al momento"}
-            {activeTab === 1 && "Non ci sono comande per la brace"}
-            {activeTab === 2 && "Non ci sono comande nel sistema"}
+            Non ci sono comande per la brace
           </Typography>
         </Paper>
       );
@@ -96,49 +71,15 @@ function BraceContent() {
 
   return (
     <>
-      <Paper sx={{ mb: 3 }}>
-        <Tabs
-          value={activeTab}
-          onChange={(_, newValue) => setActiveTab(newValue)}
-          variant="fullWidth"
-        >
-          <Tab
-            label={
-              <Box display="flex" alignItems="center" gap={1}>
-                🔥 Prioritarie
-                <Chip
-                  label={filteredComande.priority.length}
-                  size="small"
-                  color="warning"
-                />
-              </Box>
-            }
+      <Paper sx={{ mb: 3, p: 2 }}>
+        <Box display="flex" alignItems="center" gap={1}>
+          <Typography variant="h6">🍖 Comande Brace</Typography>
+          <Chip
+            label={filteredComande.brace.length}
+            size="small"
+            color="primary"
           />
-          <Tab
-            label={
-              <Box display="flex" alignItems="center" gap={1}>
-                🍖 Solo Brace
-                <Chip
-                  label={filteredComande.brace.length}
-                  size="small"
-                  color="primary"
-                />
-              </Box>
-            }
-          />
-          <Tab
-            label={
-              <Box display="flex" alignItems="center" gap={1}>
-                📋 Tutte
-                <Chip
-                  label={filteredComande.all.length}
-                  size="small"
-                  color="default"
-                />
-              </Box>
-            }
-          />
-        </Tabs>
+        </Box>
       </Paper>
 
       {getTabContent()}

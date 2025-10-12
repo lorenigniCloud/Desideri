@@ -1,9 +1,4 @@
-import {
-  determineMainReparto,
-  Menu,
-  RepartoType,
-  supabase,
-} from "@/lib/supabase";
+import { getRepartoFromCategoria, RepartoType, supabase } from "@/lib/supabase";
 import {
   ComandaCompleta,
   CreateComandaRequest,
@@ -25,6 +20,7 @@ export function useComande() {
             id,
             quantita,
             prezzo_unitario,
+            reparto,
             menu (nome, categoria)
           )
         `
@@ -47,15 +43,16 @@ export function useComandeByReparto(reparto: RepartoType) {
         .select(
           `
           *,
-          dettagli_comanda (
+          dettagli_comanda!inner (
             id,
             quantita,
             prezzo_unitario,
+            reparto,
             menu (nome, categoria)
           )
         `
         )
-        .eq("reparto", reparto)
+        .eq("dettagli_comanda.reparto", reparto)
         .order("data_ordine", { ascending: false });
 
       if (error) throw error;
@@ -78,6 +75,7 @@ export function useComandeByCamera(nomeCameriere: string) {
             id,
             quantita,
             prezzo_unitario,
+            reparto,
             menu (nome, categoria)
           )
         `
@@ -105,15 +103,7 @@ export function useCreateComanda() {
 
       if (menuError) throw menuError;
 
-      // Determina il reparto principale in base ai piatti
-      const piattiConMenu = comandaData.piatti
-        .map((piatto) => {
-          const menu = menuItems?.find((m) => m.id === piatto.menu_id);
-          return { menu: menu as Menu };
-        })
-        .filter((p) => p.menu);
-
-      const repartoAssegnato = determineMainReparto(piattiConMenu);
+      // Non assegniamo più un reparto alla comanda
 
       // Calcola il totale
       const totale = comandaData.piatti.reduce(
@@ -121,7 +111,7 @@ export function useCreateComanda() {
         0
       );
 
-      // Crea la comanda con tutti i campi
+      // Crea la comanda senza reparto
       const { data: comanda, error: comandaError } = await supabase
         .from("comanda")
         .insert([
@@ -129,7 +119,6 @@ export function useCreateComanda() {
             cliente: comandaData.cliente,
             nome_cameriere: comandaData.nome_cameriere,
             tavolo: comandaData.tavolo,
-            reparto: repartoAssegnato,
             stato: "nuovo" as const,
             totale,
             note: comandaData.note,
@@ -140,13 +129,19 @@ export function useCreateComanda() {
 
       if (comandaError) throw comandaError;
 
-      // Aggiungi i dettagli
-      const dettagli = comandaData.piatti.map((piatto) => ({
-        comanda_id: comanda.id,
-        menu_id: piatto.menu_id,
-        quantita: piatto.quantita,
-        prezzo_unitario: piatto.prezzo_unitario,
-      }));
+      // Aggiungi i dettagli con reparto per ogni piatto
+      const dettagli = comandaData.piatti.map((piatto) => {
+        const menu = menuItems?.find((m) => m.id === piatto.menu_id);
+        const reparto = getRepartoFromCategoria(menu?.categoria || "");
+
+        return {
+          comanda_id: comanda.id,
+          menu_id: piatto.menu_id,
+          quantita: piatto.quantita,
+          prezzo_unitario: piatto.prezzo_unitario,
+          reparto,
+        };
+      });
 
       const { error: dettagliError } = await supabase
         .from("dettagli_comanda")

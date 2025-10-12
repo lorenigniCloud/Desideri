@@ -10,42 +10,27 @@ import {
   Chip,
   CircularProgress,
   Paper,
-  Tab,
-  Tabs,
   Typography,
 } from "@mui/material";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 function CucinaContent() {
-  const [activeTab, setActiveTab] = useState(0);
   const { role } = useAuth();
   const { data: comande, isLoading, error } = useComande();
 
-  // Filtri per le comande
   const filteredComande = useMemo(() => {
-    if (!comande) return { all: [], cucina: [], priority: [] };
+    if (!comande) return { cucina: [] };
 
-    const all = comande;
-    const cucina = comande.filter((c) => c.reparto === "cucina");
-    const priority = comande.filter(
-      (c) =>
-        c.stato === "nuovo" ||
-        c.stato === "in_cucina" ||
-        (c.reparto === "cucina" && c.stato === "cucina_pronto")
+    // Comande che hanno almeno un piatto per cucina
+    const cucina = comande.filter((c) =>
+      c.dettagli_comanda.some((d) => d.reparto === "cucina")
     );
 
-    return { all, cucina, priority };
+    return { cucina };
   }, [comande]);
 
   const getTabContent = () => {
-    let comandesToShow;
-    if (activeTab === 0) {
-      comandesToShow = filteredComande.priority;
-    } else if (activeTab === 1) {
-      comandesToShow = filteredComande.cucina;
-    } else {
-      comandesToShow = filteredComande.all;
-    }
+    const comandesToShow = filteredComande.cucina;
 
     if (comandesToShow.length === 0) {
       return (
@@ -54,9 +39,7 @@ function CucinaContent() {
             Nessuna comanda trovata
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            {activeTab === 0 && "Non ci sono comande prioritarie al momento"}
-            {activeTab === 1 && "Non ci sono comande per la cucina"}
-            {activeTab === 2 && "Non ci sono comande nel sistema"}
+            Non ci sono comande per la cucina
           </Typography>
         </Paper>
       );
@@ -89,49 +72,15 @@ function CucinaContent() {
 
   return (
     <>
-      <Paper sx={{ mb: 3 }}>
-        <Tabs
-          value={activeTab}
-          onChange={(_, newValue) => setActiveTab(newValue)}
-          variant="fullWidth"
-        >
-          <Tab
-            label={
-              <Box display="flex" alignItems="center" gap={1}>
-                🔥 Prioritarie
-                <Chip
-                  label={filteredComande.priority.length}
-                  size="small"
-                  color="warning"
-                />
-              </Box>
-            }
+      <Paper sx={{ mb: 3, p: 2 }}>
+        <Box display="flex" alignItems="center" gap={1}>
+          <Typography variant="h6">👩‍🍳 Comande Cucina</Typography>
+          <Chip
+            label={filteredComande.cucina.length}
+            size="small"
+            color="primary"
           />
-          <Tab
-            label={
-              <Box display="flex" alignItems="center" gap={1}>
-                👩‍🍳 Solo Cucina
-                <Chip
-                  label={filteredComande.cucina.length}
-                  size="small"
-                  color="primary"
-                />
-              </Box>
-            }
-          />
-          <Tab
-            label={
-              <Box display="flex" alignItems="center" gap={1}>
-                📋 Tutte
-                <Chip
-                  label={filteredComande.all.length}
-                  size="small"
-                  color="default"
-                />
-              </Box>
-            }
-          />
-        </Tabs>
+        </Box>
       </Paper>
 
       {getTabContent()}
