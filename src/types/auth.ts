@@ -13,6 +13,8 @@ export interface RoleConfig {
   role: UserRole;
   password: string;
   displayName: string;
+  department: string;
+  departmentIcon: string;
   redirectPath: string;
   color: string;
   icon: string;
@@ -21,6 +23,8 @@ export interface RoleConfig {
 export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
   cassiere: {
     role: "cassiere",
+    department: "Cassa",
+    departmentIcon: "💸",
     password: "cassa123",
     displayName: "Cassiere",
     redirectPath: "/cassa",
@@ -30,6 +34,8 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
   cameriere: {
     role: "cameriere",
     password: "cameriere123",
+    department: "Comande",
+    departmentIcon: "📋",
     displayName: "Cameriere",
     redirectPath: "/camerieri",
     color: "#9C27B0",
@@ -38,6 +44,8 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
   cuoca: {
     role: "cuoca",
     password: "cucina123",
+    department: "Cucina",
+    departmentIcon: "🥘",
     displayName: "Cuoca",
     redirectPath: "/cucina",
     color: "#4CAF50",
@@ -46,9 +54,11 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
   bracerista: {
     role: "bracerista",
     password: "brace123",
+    department: "Brace",
+    departmentIcon: "🍖",
     displayName: "Bracerista",
     redirectPath: "/brace",
     color: "#FF9800",
-    icon: "🍖",
+    icon: "🐎",
   },
 };

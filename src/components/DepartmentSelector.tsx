@@ -58,11 +58,11 @@ export const DepartmentSelector: React.FC = () => {
                   component="div"
                   sx={{ fontSize: "4rem", mb: 2 }}
                 >
-                  {config.icon}
+                  {config.departmentIcon}
                 </Typography>
 
                 <Typography variant="h5" component="h2" gutterBottom>
-                  {config.displayName}
+                  {config.department}
                 </Typography>
 
                 <Typography
