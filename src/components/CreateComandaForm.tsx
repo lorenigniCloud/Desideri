@@ -7,7 +7,6 @@ import { CAMERIERI } from "@/lib/supabase";
 import { CreateComandaRequest, PiattoComanda } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  FilterList,
   Note,
   Person,
   ShoppingCart,
@@ -22,7 +21,6 @@ import {
   FormControl,
   InputLabel,
   MenuItem,
-  Paper,
   Select,
   TextField,
   ToggleButton,
@@ -37,11 +35,30 @@ import { z } from "zod";
 const comandaSchema = z.object({
   cliente: z.string().min(1, "Nome cliente è obbligatorio").trim(),
   nome_cameriere: z.string().min(1, "Nome cameriere è obbligatorio").trim(),
-  tavolo: z.number().min(1, "Il numero tavolo deve essere almeno 1"),
+  tavolo: z
+    .union([
+      z.number().min(1, "Il numero tavolo deve essere almeno 1"),
+      z.string().min(1, "Il numero tavolo è obbligatorio"),
+    ])
+    .transform((val) => {
+      if (typeof val === "string") {
+        const numVal = Number(val);
+        if (isNaN(numVal) || numVal < 1) {
+          throw new Error("Il numero tavolo deve essere almeno 1");
+        }
+        return numVal;
+      }
+      return val;
+    }),
   note: z.string().optional(),
 });
 
-type ComandaFormData = z.infer<typeof comandaSchema>;
+type ComandaFormData = {
+  cliente: string;
+  nome_cameriere: string;
+  tavolo: number | string;
+  note?: string;
+};
 
 export const CreateComandaForm: React.FC = () => {
   const [quantities, setQuantities] = useState<Record<number, number>>({});
@@ -122,7 +139,8 @@ export const CreateComandaForm: React.FC = () => {
     const comandaData: CreateComandaRequest = {
       cliente: data.cliente,
       nome_cameriere: data.nome_cameriere,
-      tavolo: data.tavolo,
+      tavolo:
+        typeof data.tavolo === "string" ? Number(data.tavolo) : data.tavolo,
       piatti: selectedItems,
       note: data.note || undefined,
     };
@@ -147,278 +165,277 @@ export const CreateComandaForm: React.FC = () => {
   }
 
   return (
-    <Box sx={{ maxWidth: 1400, mx: "auto", p: 3 }}>
+    <Box sx={{ p: { xs: 1, sm: 2 }, maxWidth: 1200, mx: "auto" }}>
       <Typography variant="h4" component="h1" gutterBottom align="center">
         🍽️ Nuova Comanda
       </Typography>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", lg: "2fr 1fr" },
-            gap: 3,
-          }}
-        >
-          {/* Form Dati Comanda */}
-          <Box>
-            <Paper sx={{ p: 3, mb: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                <Person sx={{ mr: 1, verticalAlign: "middle" }} />
-                Informazioni Comanda
+        {/* Form Dati Comanda - Semplificato */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+            <Person sx={{ mr: 1, verticalAlign: "middle" }} />
+            Informazioni Comanda
+          </Typography>
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+              gap: 2,
+            }}
+          >
+            <Controller
+              name="cliente"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  label="Nome Cliente"
+                  error={!!errors.cliente}
+                  helperText={errors.cliente?.message}
+                  required
+                />
+              )}
+            />
+
+            <Controller
+              name="nome_cameriere"
+              control={control}
+              render={({ field }) => (
+                <FormControl fullWidth error={!!errors.nome_cameriere}>
+                  <InputLabel>Cameriere</InputLabel>
+                  <Select {...field} label="Cameriere" required>
+                    {CAMERIERI.map((cameriere) => (
+                      <MenuItem key={cameriere} value={cameriere}>
+                        {cameriere}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {errors.nome_cameriere && (
+                    <Typography
+                      variant="caption"
+                      color="error"
+                      sx={{ mt: 0.5, ml: 1.5 }}
+                    >
+                      {errors.nome_cameriere.message}
+                    </Typography>
+                  )}
+                </FormControl>
+              )}
+            />
+
+            <Controller
+              name="tavolo"
+              control={control}
+              render={({ field: { onChange, value, ...field } }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  label="Numero Tavolo"
+                  type="number"
+                  value={value || ""}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    if (newValue === "") {
+                      onChange("");
+                    } else {
+                      const numValue = Number(newValue);
+                      if (!isNaN(numValue) && numValue > 0) {
+                        onChange(numValue);
+                      }
+                    }
+                  }}
+                  error={!!errors.tavolo}
+                  helperText={errors.tavolo?.message}
+                  slotProps={{
+                    input: {
+                      startAdornment: <TableRestaurant sx={{ mr: 1 }} />,
+                    },
+                    htmlInput: { min: 1 },
+                  }}
+                />
+              )}
+            />
+
+            <Controller
+              name="note"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  label="Note (opzionale)"
+                  slotProps={{
+                    input: {
+                      startAdornment: <Note sx={{ mr: 1 }} />,
+                    },
+                  }}
+                />
+              )}
+            />
+          </Box>
+        </Box>
+
+        {/* Menu - Semplificato */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+            📋 Menu
+          </Typography>
+          
+          <Box sx={{ mb: 2, display: "flex", flexWrap: "wrap", gap: 1 }}>
+            <ToggleButtonGroup
+              value={selectedCategory}
+              exclusive
+              onChange={(_, newCategory) =>
+                newCategory && setSelectedCategory(newCategory)
+              }
+              size="small"
+            >
+              <ToggleButton value="all">Tutti</ToggleButton>
+              {availableCategories.map((category) => (
+                <ToggleButton key={category} value={category}>
+                  {category}
+                </ToggleButton>
+              ))}
+            </ToggleButtonGroup>
+          </Box>
+
+          {Object.entries(filteredMenu).map(([categoria, items]) => (
+            <Box key={categoria} mb={4}>
+              <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+                {categoria} ({items.length} piatti)
               </Typography>
 
               <Box
                 sx={{
                   display: "grid",
-                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                  gap: 2,
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    sm: "repeat(2, 1fr)",
+                    lg: "repeat(3, 1fr)",
+                  },
+                  gap: 3,
                 }}
               >
-                <Controller
-                  name="cliente"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      label="Nome Cliente"
-                      error={!!errors.cliente}
-                      helperText={errors.cliente?.message}
-                      required
-                    />
-                  )}
-                />
-
-                <Controller
-                  name="nome_cameriere"
-                  control={control}
-                  render={({ field }) => (
-                    <FormControl fullWidth error={!!errors.nome_cameriere}>
-                      <InputLabel>Cameriere</InputLabel>
-                      <Select {...field} label="Cameriere" required>
-                        {CAMERIERI.map((cameriere) => (
-                          <MenuItem key={cameriere} value={cameriere}>
-                            {cameriere}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      {errors.nome_cameriere && (
-                        <Typography
-                          variant="caption"
-                          color="error"
-                          sx={{ mt: 0.5, ml: 1.5 }}
-                        >
-                          {errors.nome_cameriere.message}
-                        </Typography>
-                      )}
-                    </FormControl>
-                  )}
-                />
-
-                <Controller
-                  name="tavolo"
-                  control={control}
-                  render={({ field: { onChange, value, ...field } }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      label="Numero Tavolo"
-                      type="number"
-                      value={value}
-                      onChange={(e) => onChange(Number(e.target.value))}
-                      error={!!errors.tavolo}
-                      helperText={errors.tavolo?.message}
-                      slotProps={{
-                        input: {
-                          startAdornment: <TableRestaurant sx={{ mr: 1 }} />,
-                        },
-                        htmlInput: { min: 1 },
-                      }}
-                    />
-                  )}
-                />
-
-                <Controller
-                  name="note"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      label="Note (opzionale)"
-                      slotProps={{
-                        input: {
-                          startAdornment: <Note sx={{ mr: 1 }} />,
-                        },
-                      }}
-                    />
-                  )}
-                />
+                {items.map((item) => (
+                  <MenuItemCard
+                    key={item.id}
+                    item={item}
+                    quantity={quantities[item.id] || 0}
+                    onQuantityChange={handleQuantityChange}
+                  />
+                ))}
               </Box>
-            </Paper>
+            </Box>
+          ))}
+        </Box>
 
-            {/* Menu */}
-            <Paper sx={{ p: 3 }}>
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                mb={3}
-                flexWrap="wrap"
-                gap={2}
-              >
-                <Typography variant="h6">📋 Menu</Typography>
-                <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
-                  <FilterList />
-                  <ToggleButtonGroup
-                    value={selectedCategory}
-                    exclusive
-                    onChange={(_, newCategory) =>
-                      newCategory && setSelectedCategory(newCategory)
-                    }
-                    size="small"
-                  >
-                    <ToggleButton value="all">Tutti</ToggleButton>
-                    {availableCategories.map((category) => (
-                      <ToggleButton key={category} value={category}>
-                        {category}
-                      </ToggleButton>
-                    ))}
-                  </ToggleButtonGroup>
-                </Box>
-              </Box>
+        {/* Riepilogo Comanda - Semplificato */}
+        <Box sx={{ 
+          position: { xs: "static", lg: "sticky" }, 
+          top: 20,
+          bgcolor: "background.paper",
+          p: 2,
+          borderRadius: 1,
+          border: 1,
+          borderColor: "divider"
+        }}>
+          <Typography variant="h6" gutterBottom>
+            <ShoppingCart sx={{ mr: 1, verticalAlign: "middle" }} />
+            Riepilogo Comanda
+          </Typography>
 
-              {Object.entries(filteredMenu).map(([categoria, items]) => (
-                <Box key={categoria} mb={4}>
-                  <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
-                    {categoria} ({items.length} piatti)
-                  </Typography>
+          {selectedItems.length === 0 ? (
+            <Typography
+              color="text.secondary"
+              align="center"
+              sx={{ py: 4 }}
+            >
+              Nessun piatto selezionato
+            </Typography>
+          ) : (
+            <>
+              {selectedItems.map((item) => {
+                // Trova il menu item per ottenere nome e categoria
+                const menuItem = Object.values(menuByCategory || {})
+                  .flat()
+                  .find((m) => m.id === item.menu_id);
 
-                  <Box
-                    sx={{
-                      display: "grid",
-                      gridTemplateColumns: {
-                        xs: "1fr",
-                        sm: "repeat(2, 1fr)",
-                        lg: "repeat(3, 1fr)",
-                      },
-                      gap: 3,
-                    }}
-                  >
-                    {items.map((item) => (
-                      <MenuItemCard
-                        key={item.id}
-                        item={item}
-                        quantity={quantities[item.id] || 0}
-                        onQuantityChange={handleQuantityChange}
-                      />
-                    ))}
-                  </Box>
-                </Box>
-              ))}
-            </Paper>
-          </Box>
+                if (!menuItem) return null;
 
-          {/* Riepilogo Comanda */}
-          <Box>
-            <Paper sx={{ p: 3, position: "sticky", top: 20 }}>
-              <Typography variant="h6" gutterBottom>
-                <ShoppingCart sx={{ mr: 1, verticalAlign: "middle" }} />
-                Riepilogo Comanda
-              </Typography>
-
-              {selectedItems.length === 0 ? (
-                <Typography
-                  color="text.secondary"
-                  align="center"
-                  sx={{ py: 4 }}
-                >
-                  Nessun piatto selezionato
-                </Typography>
-              ) : (
-                <>
-                  {selectedItems.map((item) => {
-                    // Trova il menu item per ottenere nome e categoria
-                    const menuItem = Object.values(menuByCategory || {})
-                      .flat()
-                      .find((m) => m.id === item.menu_id);
-
-                    if (!menuItem) return null;
-
-                    return (
-                      <Box key={item.menu_id} sx={{ mb: 2 }}>
-                        <Box
-                          display="flex"
-                          justifyContent="space-between"
-                          alignItems="center"
-                        >
-                          <Box sx={{ flexGrow: 1 }}>
-                            <Typography variant="body1" fontWeight="medium">
-                              {menuItem.nome}
-                            </Typography>
-                            <Chip
-                              label={menuItem.categoria}
-                              size="small"
-                              variant="outlined"
-                              sx={{ mt: 0.5 }}
-                            />
-                          </Box>
-                          <Typography variant="body2" sx={{ ml: 2 }}>
-                            x{item.quantita}
-                          </Typography>
-                        </Box>
-                        <Typography variant="body2" color="text.secondary">
-                          €{item.prezzo_unitario.toFixed(2)} x {item.quantita} =
-                          €{(item.prezzo_unitario * item.quantita).toFixed(2)}
+                return (
+                  <Box key={item.menu_id} sx={{ mb: 2 }}>
+                    <Box
+                      display="flex"
+                      justifyContent="space-between"
+                      alignItems="center"
+                    >
+                      <Box sx={{ flexGrow: 1 }}>
+                        <Typography variant="body1" fontWeight="medium">
+                          {menuItem.nome}
                         </Typography>
-                        <Divider sx={{ mt: 1 }} />
+                        <Chip
+                          label={menuItem.categoria}
+                          size="small"
+                          variant="outlined"
+                          sx={{ mt: 0.5 }}
+                        />
                       </Box>
-                    );
-                  })}
-
-                  <Box sx={{ mt: 3 }}>
-                    <Typography variant="h6" align="right">
-                      Totale: €{totalPrice.toFixed(2)}
+                      <Typography variant="body2" sx={{ ml: 2 }}>
+                        x{item.quantita}
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" color="text.secondary">
+                      €{item.prezzo_unitario.toFixed(2)} x {item.quantita} =
+                      €{(item.prezzo_unitario * item.quantita).toFixed(2)}
                     </Typography>
+                    <Divider sx={{ mt: 1 }} />
                   </Box>
-                </>
-              )}
+                );
+              })}
 
-              {createComanda.error && (
-                <Alert severity="error" sx={{ mt: 2 }}>
-                  Errore nella creazione della comanda
-                </Alert>
-              )}
+              <Box sx={{ mt: 3 }}>
+                <Typography variant="h6" align="right">
+                  Totale: €{totalPrice.toFixed(2)}
+                </Typography>
+              </Box>
+            </>
+          )}
 
-              {createComanda.isSuccess && (
-                <Alert severity="success" sx={{ mt: 2 }}>
-                  Comanda creata con successo!
-                </Alert>
-              )}
+          {createComanda.error && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              Errore nella creazione della comanda
+            </Alert>
+          )}
 
-              {selectedItems.length === 0 && (
-                <Alert severity="info" sx={{ mt: 2 }}>
-                  Seleziona almeno un piatto per creare la comanda
-                </Alert>
-              )}
+          {createComanda.isSuccess && (
+            <Alert severity="success" sx={{ mt: 2 }}>
+              Comanda creata con successo!
+            </Alert>
+          )}
 
-              <Button
-                type="submit"
-                variant="contained"
-                fullWidth
-                size="large"
-                disabled={
-                  !isValid ||
-                  selectedItems.length === 0 ||
-                  createComanda.isPending
-                }
-                sx={{ mt: 2 }}
-              >
-                {createComanda.isPending ? "Creazione..." : "Crea Comanda"}
-              </Button>
-            </Paper>
-          </Box>
+          {selectedItems.length === 0 && (
+            <Alert severity="info" sx={{ mt: 2 }}>
+              Seleziona almeno un piatto per creare la comanda
+            </Alert>
+          )}
+
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            size="large"
+            disabled={
+              !isValid ||
+              selectedItems.length === 0 ||
+              createComanda.isPending
+            }
+            sx={{ mt: 2 }}
+          >
+            {createComanda.isPending ? "Creazione..." : "Crea Comanda"}
+          </Button>
         </Box>
       </form>
     </Box>

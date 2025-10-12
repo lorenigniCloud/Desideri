@@ -24,7 +24,6 @@ function CassaContent() {
         <Tabs value={tabValue} onChange={handleTabChange} centered>
           <Tab label="📝 Nuova Comanda" />
           <Tab label="📋 Ordini Attivi" />
-          <Tab label="💰 Pagamenti" />
         </Tabs>
       </Paper>
 
@@ -60,21 +59,6 @@ function CassaContent() {
         </Paper>
       )}
 
-      {tabValue === 2 && (
-        <Paper sx={{ p: 4, textAlign: "center" }}>
-          <Typography variant="h5" gutterBottom>
-            💰 Gestione Pagamenti
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Sistema di pagamento e fatturazione...
-          </Typography>
-          <Box mt={2}>
-            <Typography variant="body2" color="text.secondary">
-              🔧 Funzionalità in sviluppo...
-            </Typography>
-          </Box>
-        </Paper>
-      )}
     </CassaPageLayout>
   );
 }

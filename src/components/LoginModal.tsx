@@ -15,7 +15,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 interface LoginModalProps {
   open: boolean;
@@ -31,8 +31,21 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const passwordRef = useRef<HTMLInputElement>(null);
 
   const login = useAuthStore((state) => state.login);
+
+  // Reset password e focus quando si apre il modal
+  useEffect(() => {
+    if (open) {
+      setPassword("");
+      setError("");
+      // Focus sul campo password dopo un piccolo delay
+      setTimeout(() => {
+        passwordRef.current?.focus();
+      }, 100);
+    }
+  }, [open]);
 
   const roleConfig = selectedRole ? ROLE_CONFIGS[selectedRole] : null;
 
@@ -103,7 +116,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           )}
 
           <TextField
-            autoFocus
+            ref={passwordRef}
             fullWidth
             type="password"
             label="Password"
