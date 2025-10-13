@@ -64,10 +64,15 @@ export default function ProtectedTemplate({
     return <>{children}</>;
   }
 
+  if (!role) {
+    return null;
+  }
+
   // Wrapper con controllo permessi per visualizzazione
   // Tutti possono vedere, ma solo il ruolo specifico può modificare
   return (
     <PermissionWrapper
+      currentUserRole={role}
       requiredRole={requiredRole}
       requireEdit={false} // Tutti possono visualizzare
       fallback={
