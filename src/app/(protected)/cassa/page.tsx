@@ -6,6 +6,7 @@ import { CreateComandaForm } from "@/components/CreateComandaForm";
 import { PermissionWrapper } from "@/components/PermissionWrapper";
 import { useAuth } from "@/hooks/useAuth";
 import { useComande } from "@/hooks/useComande";
+import { separaComandeComplete } from "@/lib/comanda-status-utils";
 import {
   Alert,
   Box,
@@ -15,12 +16,18 @@ import {
   Tabs,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 function CassaContent() {
   const [tabValue, setTabValue] = useState(0);
   const { data: comande, isLoading, error } = useComande();
   const { role } = useAuth();
+
+  // Separa le comande in attive e concluse
+  const { attive: comandeAttive, concluse: comandeConcluse } = useMemo(() => {
+    if (!comande) return { attive: [], concluse: [] };
+    return separaComandeComplete(comande);
+  }, [comande]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -36,7 +43,8 @@ function CassaContent() {
       <Paper sx={{ mb: 3 }}>
         <Tabs value={tabValue} onChange={handleTabChange} centered>
           <Tab label="📝 Nuova Comanda" />
-          <Tab label="📋 Ordini Attivi" />
+          <Tab label={`📋 Ordini Attivi (${comandeAttive.length})`} />
+          <Tab label={`✅ Ordini Conclusi (${comandeConcluse.length})`} />
         </Tabs>
       </Paper>
 
@@ -60,7 +68,7 @@ function CassaContent() {
       {tabValue === 1 && (
         <Box>
           <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
-            📋 Ordini Attivi
+            📋 Ordini Attivi ({comandeAttive.length})
           </Typography>
 
           {isLoading && (
@@ -75,20 +83,59 @@ function CassaContent() {
             </Alert>
           )}
 
-          {comande && comande.length === 0 && (
+          {comandeAttive.length === 0 && !isLoading && (
             <Paper sx={{ p: 4, textAlign: "center" }}>
               <Typography variant="h6" gutterBottom>
-                Nessuna comanda trovata
+                Nessun ordine attivo
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Non ci sono comande nel sistema
+                Tutti gli ordini sono stati completati
               </Typography>
             </Paper>
           )}
 
-          {comande && comande.length > 0 && (
+          {comandeAttive.length > 0 && (
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {comande.map((comanda) => (
+              {comandeAttive.map((comanda) => (
+                <ComandaCard key={comanda.id} comanda={comanda} />
+              ))}
+            </Box>
+          )}
+        </Box>
+      )}
+
+      {tabValue === 2 && (
+        <Box>
+          <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
+            ✅ Ordini Conclusi ({comandeConcluse.length})
+          </Typography>
+
+          {isLoading && (
+            <Box display="flex" justifyContent="center" p={4}>
+              <CircularProgress />
+            </Box>
+          )}
+
+          {error && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              Errore nel caricamento delle comande
+            </Alert>
+          )}
+
+          {comandeConcluse.length === 0 && !isLoading && (
+            <Paper sx={{ p: 4, textAlign: "center" }}>
+              <Typography variant="h6" gutterBottom>
+                Nessun ordine concluso
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Non ci sono ordini completati
+              </Typography>
+            </Paper>
+          )}
+
+          {comandeConcluse.length > 0 && (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {comandeConcluse.map((comanda) => (
                 <ComandaCard key={comanda.id} comanda={comanda} />
               ))}
             </Box>

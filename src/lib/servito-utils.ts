@@ -84,13 +84,6 @@ export function canClickCerchioCategoria(
   const repartoCategoria = categoriaToReparto[categoria];
   const canClick = userReparto === repartoCategoria;
 
-  console.log("canClickCerchioCategoria:", {
-    categoria,
-    userReparto,
-    repartoCategoria,
-    canClick,
-  });
-
   return canClick;
 }
 
@@ -121,7 +114,16 @@ export function raggruppaDettagliPerCategoriaServito(
   });
 
   // Calcola le informazioni per ogni categoria
-  const risultato: Record<string, any> = {};
+  const risultato: Record<
+    string,
+    {
+      dettagli: DettaglioComanda[];
+      tuttiServiti: boolean;
+      almenoUnoServito: boolean;
+      stato: "non_servito" | "parzialmente_servito" | "tutto_servito";
+      colore: "error" | "warning" | "success";
+    }
+  > = {};
 
   Object.entries(gruppi).forEach(([categoria, dettagliCategoria]) => {
     const tuttiServiti = isCategoriaServita(dettagliCategoria, categoria);

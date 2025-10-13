@@ -3,6 +3,7 @@
 import { ComandaCard } from "@/components/ComandaCard";
 import { RepartoPageLayout } from "@/components/RepartoPageLayout";
 import { useComande } from "@/hooks/useComande";
+import { separaComandeComplete } from "@/lib/comanda-status-utils";
 import { CAMERIERI } from "@/lib/supabase";
 import {
   Alert,
@@ -13,11 +14,14 @@ import {
   MenuItem,
   Paper,
   Select,
+  Tab,
+  Tabs,
   Typography,
 } from "@mui/material";
 import { useMemo, useState } from "react";
 
 function CamerieriContent() {
+  const [tabValue, setTabValue] = useState(0);
   const { data: comande, isLoading, error } = useComande();
   const [selectedCameriere, setSelectedCameriere] = useState<string>("");
 
@@ -31,6 +35,15 @@ function CamerieriContent() {
       (comanda) => comanda.nome_cameriere === selectedCameriere
     );
   }, [comande, selectedCameriere]);
+
+  // Separa le comande filtrate in attive e concluse
+  const { attive: comandeAttive, concluse: comandeConcluse } = useMemo(() => {
+    return separaComandeComplete(filteredComande);
+  }, [filteredComande]);
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+  };
 
   const getTabContent = () => {
     if (isLoading) {
@@ -49,29 +62,39 @@ function CamerieriContent() {
       );
     }
 
-    if (filteredComande.length === 0) {
+    const comandesToShow = tabValue === 0 ? comandeAttive : comandeConcluse;
+    const tipoOrdini = tabValue === 0 ? "attivi" : "conclusi";
+
+    if (comandesToShow.length === 0) {
       return (
         <Paper sx={{ p: 4, textAlign: "center" }}>
           <Typography variant="h6" gutterBottom>
             {selectedCameriere
-              ? `Nessuna comanda per ${selectedCameriere}`
-              : "Seleziona un cameriere"}
+              ? `Nessun ordine ${tipoOrdini} per ${selectedCameriere}`
+              : `Nessun ordine ${tipoOrdini}`}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             {selectedCameriere
-              ? "Non ci sono comande per questo cameriere"
-              : "Scegli un cameriere dal menu a tendina per visualizzare le sue comande"}
+              ? `Non ci sono ordini ${tipoOrdini} per questo cameriere`
+              : `Non ci sono ordini ${tipoOrdini} nel sistema`}
           </Typography>
         </Paper>
       );
     }
 
     return (
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        {filteredComande.map((comanda) => (
-          <ComandaCard key={comanda.id} comanda={comanda} />
-        ))}
-      </Box>
+      <>
+        <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
+          {tabValue === 0
+            ? `📋 Ordini Attivi (${comandeAttive.length})`
+            : `✅ Ordini Conclusi (${comandeConcluse.length})`}
+        </Typography>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {comandesToShow.map((comanda) => (
+            <ComandaCard key={comanda.id} comanda={comanda} />
+          ))}
+        </Box>
+      </>
     );
   };
 
@@ -111,6 +134,14 @@ function CamerieriContent() {
             Visualizzando comande per: <strong>{selectedCameriere}</strong>
           </Typography>
         )}
+      </Paper>
+
+      {/* Tabs per ordini attivi/conclusi */}
+      <Paper sx={{ mb: 3 }}>
+        <Tabs value={tabValue} onChange={handleTabChange} centered>
+          <Tab label={`📋 Ordini Attivi (${comandeAttive.length})`} />
+          <Tab label={`✅ Ordini Conclusi (${comandeConcluse.length})`} />
+        </Tabs>
       </Paper>
 
       {getTabContent()}

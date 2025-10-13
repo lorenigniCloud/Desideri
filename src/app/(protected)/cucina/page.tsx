@@ -3,62 +3,57 @@
 import { ComandaCard } from "@/components/ComandaCard";
 import { RepartoPageLayout } from "@/components/RepartoPageLayout";
 import { useComande } from "@/hooks/useComande";
+import { filtraESeparaComandePerReparto } from "@/lib/comanda-status-utils";
 import { ComandaCompleta } from "@/lib/supabase";
-import { Alert, Box, CircularProgress, Paper, Typography } from "@mui/material";
-import { useMemo } from "react";
+import {
+  Alert,
+  Box,
+  CircularProgress,
+  Paper,
+  Tab,
+  Tabs,
+  Typography,
+} from "@mui/material";
+import { useMemo, useState } from "react";
 
 function CucinaContent() {
+  const [tabValue, setTabValue] = useState(0);
   const { data: comande, isLoading, error } = useComande();
 
-  // Funzione per filtrare i piatti per reparto e raggrupparli per categoria
-  const filterComandeByReparto = (
-    comande: ComandaCompleta[],
-    reparto: string
-  ) => {
-    return comande
-      .map((comanda) => {
-        const filteredDettagli = comanda.dettagli_comanda.filter(
-          (d) => d.reparto === reparto
-        );
-
-        if (filteredDettagli.length === 0) return null;
-
-        return {
-          ...comanda,
-          dettagli_comanda: filteredDettagli,
-        };
-      })
-      .filter(Boolean) as ComandaCompleta[];
-  };
-
-  const filteredComande = useMemo(() => {
-    if (!comande) return { cucina: [] };
-
-    // Filtra le comande per reparto cucina
-    const cucina = filterComandeByReparto(comande, "cucina");
-
-    return { cucina };
+  // Filtra e separa le comande per reparto cucina
+  const { attive: comandeAttive, concluse: comandeConcluse } = useMemo(() => {
+    if (!comande) return { attive: [], concluse: [] };
+    return filtraESeparaComandePerReparto(comande, "cucina");
   }, [comande]);
 
-  const getTabContent = () => {
-    const comandesToShow = filteredComande.cucina;
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+  };
 
-    if (comandesToShow.length === 0) {
+  const getTabContent = (
+    comande: ComandaCompleta[],
+    tipo: "attive" | "concluse"
+  ) => {
+    if (comande.length === 0) {
       return (
         <Paper sx={{ p: 4, textAlign: "center" }}>
           <Typography variant="h6" color="text.secondary">
-            Nessuna comanda trovata
+            {tipo === "attive"
+              ? "Nessun ordine attivo"
+              : "Nessun ordine concluso"}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Non ci sono comande per la cucina
+            {tipo === "attive"
+              ? "Non ci sono ordini attivi per la cucina"
+              : "Non ci sono ordini completati per la cucina"}
           </Typography>
         </Paper>
       );
     }
 
     return (
-      <Box>
-        {comandesToShow.map((comanda) => (
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        {comande.map((comanda) => (
           <ComandaCard key={comanda.id} comanda={comanda} />
         ))}
       </Box>
@@ -83,10 +78,49 @@ function CucinaContent() {
       icon="👩‍🍳"
       description="Coordinamento della cucina"
       department="cuoca"
-      comandeCount={filteredComande.cucina.length}
+      comandeCount={comandeAttive.length + comandeConcluse.length}
       comandeLabel="👩‍🍳 Comande Cucina"
     >
-      {getTabContent()}
+      <Paper sx={{ mb: 3 }}>
+        <Tabs value={tabValue} onChange={handleTabChange} centered>
+          <Tab label={`📋 Ordini Attivi (${comandeAttive.length})`} />
+          <Tab label={`✅ Ordini Conclusi (${comandeConcluse.length})`} />
+        </Tabs>
+      </Paper>
+
+      {isLoading && (
+        <Box display="flex" justifyContent="center" p={4}>
+          <CircularProgress />
+        </Box>
+      )}
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          Errore nel caricamento delle comande
+        </Alert>
+      )}
+
+      {!isLoading && !error && (
+        <>
+          {tabValue === 0 && (
+            <Box>
+              <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
+                📋 Ordini Attivi ({comandeAttive.length})
+              </Typography>
+              {getTabContent(comandeAttive, "attive")}
+            </Box>
+          )}
+
+          {tabValue === 1 && (
+            <Box>
+              <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
+                ✅ Ordini Conclusi ({comandeConcluse.length})
+              </Typography>
+              {getTabContent(comandeConcluse, "concluse")}
+            </Box>
+          )}
+        </>
+      )}
     </RepartoPageLayout>
   );
 }

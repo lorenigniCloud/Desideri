@@ -42,13 +42,6 @@ export const CerchioStatoCategoria: React.FC<CerchioStatoCategoriaProps> = ({
   const serviCategoria = useServiCategoria();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
-  console.log("CerchioStatoCategoria", {
-    categoria,
-    dettagli,
-    comandaId,
-    size,
-  });
-
   // Determina il reparto dell'utente basato sul ruolo
   const getUserReparto = (): RepartoType | null => {
     switch (role) {

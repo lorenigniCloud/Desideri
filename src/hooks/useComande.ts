@@ -137,12 +137,17 @@ export function useCreateComanda() {
         const menu = menuItems?.find((m) => m.id === piatto.menu_id);
         const reparto = getRepartoFromCategoria(menu?.categoria || "");
 
+        // Imposta servito = true per Bevande e Servizio
+        const servito =
+          menu?.categoria === "Bevande" || menu?.categoria === "Servizio";
+
         return {
           comanda_id: comanda.id,
           menu_id: piatto.menu_id,
           quantita: piatto.quantita,
           prezzo_unitario: piatto.prezzo_unitario,
           reparto,
+          servito,
         };
       });
 
