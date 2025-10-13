@@ -146,6 +146,10 @@ export const CerchioStatoCategoria: React.FC<CerchioStatoCategoriaProps> = ({
               cursor: canClick && !tuttiServiti ? "pointer" : "default",
               padding: size === "small" ? 0.5 : 1,
             }}
+            style={{
+              // Debug: forziamo il colore verde per test
+              color: colore === "success" ? "#4caf50" : undefined,
+            }}
           >
             {serviCategoria.isPending ? (
               <CircularProgress

@@ -55,16 +55,14 @@ export function getColoreCerchioCategoria(
   categoria: string
 ): "error" | "warning" | "success" {
   const stato = getStatoCategoria(dettagli, categoria);
+  const colore =
+    stato === "tutto_servito"
+      ? "success"
+      : stato === "parzialmente_servito"
+      ? "warning"
+      : "error";
 
-  switch (stato) {
-    case "tutto_servito":
-      return "success"; // Verde
-    case "parzialmente_servito":
-      return "warning"; // Arancione/Giallo
-    case "non_servito":
-    default:
-      return "error"; // Rosso
-  }
+  return colore;
 }
 
 /**
