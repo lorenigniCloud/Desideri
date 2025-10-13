@@ -89,6 +89,14 @@ export const CATEGORIA_TO_REPARTO: Record<string, RepartoType> = {
 };
 
 // Funzione per determinare il reparto di un singolo piatto
-export const getRepartoFromCategoria = (categoria: string): RepartoType => {
+export const getRepartoFromCategoria = (
+  categoria: string,
+  nomePiatto?: string
+): RepartoType => {
+  // Eccezioni speciali per piatti specifici
+  if (nomePiatto?.toLowerCase().includes("trippa")) {
+    return "cucina"; // Trippa di Nicla va in cucina
+  }
+
   return CATEGORIA_TO_REPARTO[categoria] || "cucina";
 };

@@ -2,6 +2,7 @@
 
 import { ComandaCard } from "@/components/ComandaCard";
 import { RepartoPageLayout } from "@/components/RepartoPageLayout";
+import { TotalePiattiDaServire } from "@/components/TotalePiattiDaServire";
 import { useComande } from "@/hooks/useComande";
 import { filtraESeparaComandePerReparto } from "@/lib/comanda-status-utils";
 import { ComandaCompleta } from "@/lib/supabase";
@@ -107,6 +108,10 @@ function CucinaContent() {
               <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
                 📋 Ordini Attivi ({comandeAttive.length})
               </Typography>
+
+              {/* Accordion con totali piatti da servire */}
+              <TotalePiattiDaServire comande={comandeAttive} reparto="cucina" />
+
               {getTabContent(comandeAttive, "attive")}
             </Box>
           )}

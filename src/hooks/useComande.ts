@@ -135,7 +135,10 @@ export function useCreateComanda() {
       // Aggiungi i dettagli con reparto per ogni piatto
       const dettagli = comandaData.piatti.map((piatto) => {
         const menu = menuItems?.find((m) => m.id === piatto.menu_id);
-        const reparto = getRepartoFromCategoria(menu?.categoria || "");
+        const reparto = getRepartoFromCategoria(
+          menu?.categoria || "",
+          menu?.nome
+        );
 
         // Imposta servito = true per Bevande e Servizio
         const servito =
