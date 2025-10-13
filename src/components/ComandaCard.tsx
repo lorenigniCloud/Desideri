@@ -22,6 +22,7 @@ import {
 import { usePathname } from "next/navigation";
 import React, { useState } from "react";
 import { CerchioStatoCategoria } from "./CerchioStatoCategoria";
+import { DeleteComandaButton } from "./DeleteComandaButton";
 
 interface ComandaCardProps {
   comanda: ComandaCompleta;
@@ -29,7 +30,7 @@ interface ComandaCardProps {
 
 export const ComandaCard: React.FC<ComandaCardProps> = ({ comanda }) => {
   const [expanded, setExpanded] = useState(false);
-  const { canSeeCliente, canSeePrices, canSeeQuantity } = useAuth();
+  const { canSeeCliente, canSeePrices, canSeeQuantity, role } = useAuth();
   const pathname = usePathname();
 
   const getStatusColor = (stato: StatoComanda) => {
@@ -284,6 +285,17 @@ export const ComandaCard: React.FC<ComandaCardProps> = ({ comanda }) => {
               <Typography variant="h6">
                 Totale: €{comanda.totale.toFixed(2)}
               </Typography>
+
+              {/* Pulsante elimina solo per cassieri */}
+              {role === "cassiere" && (
+                <DeleteComandaButton
+                  comandaId={comanda.id}
+                  cliente={comanda.cliente}
+                  tavolo={comanda.tavolo}
+                  size="small"
+                  variant="icon"
+                />
+              )}
             </Box>
           )}
 
