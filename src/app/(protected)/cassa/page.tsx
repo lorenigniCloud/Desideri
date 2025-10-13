@@ -41,10 +41,16 @@ function CassaContent() {
       department="cassiere"
     >
       <Paper sx={{ mb: 3 }}>
-        <Tabs value={tabValue} onChange={handleTabChange} centered>
-          <Tab label="📝 Nuova Comanda" />
-          <Tab label={`📋 Ordini Attivi (${comandeAttive.length})`} />
-          <Tab label={`✅ Ordini Conclusi (${comandeConcluse.length})`} />
+        <Tabs
+          value={tabValue}
+          onChange={handleTabChange}
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+        >
+          <Tab label="📝 Nuova" />
+          <Tab label={`📋 Attivi (${comandeAttive.length})`} />
+          <Tab label={`✅ Conclusi (${comandeConcluse.length})`} />
         </Tabs>
       </Paper>
 

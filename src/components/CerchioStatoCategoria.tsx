@@ -175,10 +175,6 @@ export const CerchioStatoCategoria: React.FC<CerchioStatoCategoriaProps> = ({
             Sei sicuro di voler segnare tutti i piatti della categoria{" "}
             <strong>{categoria}</strong> come serviti?
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Questa azione segnerà {dettagliCategoria.length} piatti come
-            serviti.
-          </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setShowConfirmDialog(false)} color="inherit">

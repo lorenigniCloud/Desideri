@@ -19,6 +19,7 @@ import {
   IconButton,
   Typography,
 } from "@mui/material";
+import { usePathname } from "next/navigation";
 import React, { useState } from "react";
 import { CerchioStatoCategoria } from "./CerchioStatoCategoria";
 
@@ -29,6 +30,7 @@ interface ComandaCardProps {
 export const ComandaCard: React.FC<ComandaCardProps> = ({ comanda }) => {
   const [expanded, setExpanded] = useState(false);
   const { canSeeCliente, canSeePrices, canSeeQuantity } = useAuth();
+  const pathname = usePathname();
 
   const getStatusColor = (stato: StatoComanda) => {
     switch (stato) {
@@ -271,17 +273,19 @@ export const ComandaCard: React.FC<ComandaCardProps> = ({ comanda }) => {
 
         <Divider sx={{ mt: 1 }} />
 
-        {canSeePrices() && (
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-          >
-            <Typography variant="h6">
-              Totale: €{comanda.totale.toFixed(2)}
-            </Typography>
-          </Box>
-        )}
+        {canSeePrices() &&
+          pathname !== "/cucina/" &&
+          pathname !== "/brace/" && (
+            <Box
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <Typography variant="h6">
+                Totale: €{comanda.totale.toFixed(2)}
+              </Typography>
+            </Box>
+          )}
 
         {comanda.note && (
           <Box sx={{ mt: 1 }}>
