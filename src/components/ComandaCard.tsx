@@ -1,25 +1,24 @@
 "use client";
 
-import { useUpdateComanda } from "@/hooks/useComande";
 import { ComandaCompleta, StatoComanda } from "@/lib/supabase";
 import { UserRole } from "@/types/auth";
 import {
   AccessTime,
+  ExpandMore,
   Person,
-  Restaurant,
   TableRestaurant,
 } from "@mui/icons-material";
 import {
   Box,
-  Button,
-  ButtonGroup,
   Card,
   CardContent,
   Chip,
+  Collapse,
   Divider,
+  IconButton,
   Typography,
 } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
 
 interface ComandaCardProps {
   comanda: ComandaCompleta;
@@ -30,7 +29,7 @@ export const ComandaCard: React.FC<ComandaCardProps> = ({
   comanda,
   currentUserRole,
 }) => {
-  const updateComanda = useUpdateComanda();
+  const [expanded, setExpanded] = useState(false);
 
   const getStatusColor = (stato: StatoComanda) => {
     switch (stato) {
@@ -63,91 +62,6 @@ export const ComandaCard: React.FC<ComandaCardProps> = ({
     return labels[stato];
   };
 
-  const getAvailableActions = (stato: StatoComanda, reparto: string) => {
-    const actions: {
-      label: string;
-      newStatus: StatoComanda;
-      color?: string;
-    }[] = [];
-
-    // Azioni per bracerista (solo se la comanda ha piatti brace)
-    if (currentUserRole === "bracerista" && reparto === "brace") {
-      if (stato === "nuovo") {
-        actions.push({
-          label: "Ricevi Comanda",
-          newStatus: "comanda_ricevuta",
-          color: "primary",
-        });
-      } else if (stato === "comanda_ricevuta") {
-        actions.push({
-          label: "Prepara Comanda",
-          newStatus: "comanda_preparata",
-          color: "success",
-        });
-      } else if (stato === "comanda_preparata") {
-        actions.push({
-          label: "Concludi Comanda",
-          newStatus: "comanda_conclusa",
-          color: "info",
-        });
-      }
-    }
-
-    // Azioni per cuoca (solo se la comanda ha piatti cucina)
-    if (currentUserRole === "cuoca" && reparto === "cucina") {
-      if (stato === "nuovo") {
-        actions.push({
-          label: "Ricevi Comanda",
-          newStatus: "comanda_ricevuta",
-          color: "primary",
-        });
-      } else if (stato === "comanda_ricevuta") {
-        actions.push({
-          label: "Prepara Comanda",
-          newStatus: "comanda_preparata",
-          color: "success",
-        });
-      } else if (stato === "comanda_preparata") {
-        actions.push({
-          label: "Concludi Comanda",
-          newStatus: "comanda_conclusa",
-          color: "info",
-        });
-      }
-    }
-
-    // Azioni per cassiere
-    if (currentUserRole === "cassiere") {
-      if (stato === "comanda_conclusa") {
-        actions.push({
-          label: "Segna Servito",
-          newStatus: "servito",
-          color: "success",
-        });
-      }
-      if (stato !== "servito" && stato !== "cancellato") {
-        actions.push({
-          label: "Cancella",
-          newStatus: "cancellato",
-          color: "error",
-        });
-      }
-    }
-
-    return actions;
-  };
-
-  const handleStatusChange = async (newStatus: StatoComanda) => {
-    try {
-      await updateComanda.mutateAsync({
-        id: comanda.id,
-        stato: newStatus,
-      });
-    } catch (error) {
-      console.error("Errore nell'aggiornamento dello stato:", error);
-    }
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString("it-IT", {
       day: "2-digit",
@@ -158,28 +72,12 @@ export const ComandaCard: React.FC<ComandaCardProps> = ({
     });
   };
 
-  // Determina se l'utente può modificare questa comanda basandosi sui dettagli
-  const hasBraceItems = comanda.dettagli_comanda.some(
-    (d) => d.reparto === "brace"
-  );
-  const hasCucinaItems = comanda.dettagli_comanda.some(
-    (d) => d.reparto === "cucina"
-  );
-
-  const availableActions = getAvailableActions(
-    comanda.stato,
-    hasBraceItems ? "brace" : hasCucinaItems ? "cucina" : "cassa"
-  );
-
-  const canModify =
-    currentUserRole === "cassiere" ||
-    (currentUserRole === "bracerista" && hasBraceItems) ||
-    (currentUserRole === "cuoca" && hasCucinaItems);
-
   return (
     <Card
       sx={{
         mb: 2,
+        maxHeight: expanded ? "none" : "300px",
+        overflow: "hidden",
         border: 2,
         borderColor:
           comanda.stato === "nuovo"
@@ -192,54 +90,46 @@ export const ComandaCard: React.FC<ComandaCardProps> = ({
         "&:hover": {
           boxShadow: 4,
         },
+        transition: "max-height 0.3s ease-in-out",
       }}
     >
-      <CardContent>
+      <CardContent sx={{ pb: 1 }}>
+        {/* Riga 1: Comanda #ID - Stato */}
         <Box
           display="flex"
           justifyContent="space-between"
-          alignItems="start"
-          mb={2}
+          alignItems="center"
+          mb={1}
         >
-          <Box>
-            <Typography variant="h6" component="h3">
-              Comanda #{comanda.id}
-            </Typography>
-            <Box display="flex" alignItems="center" gap={1} mt={1}>
-              <Person fontSize="small" />
-              <Typography variant="body2" color="text.secondary">
-                {comanda.cliente}
-              </Typography>
-            </Box>
-          </Box>
-
-          <Box textAlign="right">
-            <Chip
-              label={getStatusLabel(comanda.stato)}
-              color={
-                getStatusColor(comanda.stato) as
-                  | "default"
-                  | "primary"
-                  | "secondary"
-                  | "error"
-                  | "info"
-                  | "success"
-                  | "warning"
-              }
-              size="small"
-              sx={{ mb: 1 }}
-            />
-            <Typography variant="body2" color="text.secondary" display="block">
-              <AccessTime
-                fontSize="small"
-                sx={{ mr: 0.5, verticalAlign: "middle" }}
-              />
-              {formatDate(comanda.data_ordine)}
-            </Typography>
-          </Box>
+          <Typography variant="h6" component="h3">
+            Comanda #{comanda.id}
+          </Typography>
+          <Chip
+            label={getStatusLabel(comanda.stato)}
+            color={
+              getStatusColor(comanda.stato) as
+                | "default"
+                | "primary"
+                | "secondary"
+                | "error"
+                | "info"
+                | "success"
+                | "warning"
+            }
+            size="small"
+          />
         </Box>
 
-        <Box display="flex" gap={2} mb={2} flexWrap="wrap">
+        {/* Riga 2: Orario */}
+        <Box display="flex" alignItems="center" mb={1}>
+          <AccessTime fontSize="small" sx={{ mr: 0.5 }} />
+          <Typography variant="body2" color="text.secondary">
+            {formatDate(comanda.data_ordine)}
+          </Typography>
+        </Box>
+
+        {/* Riga 3: Tavolo e Cameriere */}
+        <Box display="flex" gap={2} mb={1} flexWrap="wrap">
           <Box display="flex" alignItems="center" gap={0.5}>
             <TableRestaurant fontSize="small" />
             <Typography variant="body2">Tavolo {comanda.tavolo}</Typography>
@@ -250,135 +140,97 @@ export const ComandaCard: React.FC<ComandaCardProps> = ({
             <Typography variant="body2">{comanda.nome_cameriere}</Typography>
           </Box>
 
-          <Box display="flex" alignItems="center" gap={0.5}>
-            <Restaurant fontSize="small" />
-            <Typography variant="body2">
-              Reparti:{" "}
-              {(() => {
-                const reparti = Array.from(
-                  new Set(
-                    comanda.dettagli_comanda
-                      .map((d) => d.reparto)
-                      .filter(Boolean)
-                  )
-                );
-                return reparti.length > 0
-                  ? reparti
-                      .map((r) => r.charAt(0).toUpperCase() + r.slice(1))
-                      .join(", ")
-                  : "Non assegnato";
-              })()}
+          {currentUserRole === "cassiere" ||
+            (currentUserRole === "cameriere" && (
+              <Box display="flex" alignItems="center" gap={0.5}>
+                <Person fontSize="small" />
+                <Typography variant="body2" color="text.secondary">
+                  {comanda.cliente}
+                </Typography>
+              </Box>
+            ))}
+        </Box>
+
+        <Divider sx={{ my: 1 }} />
+
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography variant="subtitle2">
+            Piatti ordinati ({comanda.dettagli_comanda.length})
+          </Typography>
+          <IconButton
+            onClick={() => setExpanded(!expanded)}
+            sx={{
+              transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+              transition: "transform 0.2s",
+            }}
+          >
+            <ExpandMore />
+          </IconButton>
+        </Box>
+
+        <Collapse in={expanded}>
+          <Box>
+            {comanda.dettagli_comanda.map((dettaglio) => (
+              <Box
+                key={dettaglio.id}
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                sx={{ py: 0.5 }}
+              >
+                <Box
+                  display="flex"
+                  flexDirection="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  marginLeft={2}
+                  gap={1}
+                >
+                  <Typography variant="body2" fontWeight="medium">
+                    {dettaglio.menu?.nome}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {dettaglio.quantita}
+                  </Typography>
+                </Box>
+                {currentUserRole === "cassiere" ||
+                  (currentUserRole === "cameriere" && (
+                    <Box textAlign="right">
+                      <Typography variant="body2">
+                        {dettaglio.quantita}x €
+                        {dettaglio.prezzo_unitario.toFixed(2)}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        €
+                        {(
+                          dettaglio.quantita * dettaglio.prezzo_unitario
+                        ).toFixed(2)}
+                      </Typography>
+                    </Box>
+                  ))}
+              </Box>
+            ))}
+          </Box>
+        </Collapse>
+
+        <Divider sx={{ mt: 1 }} />
+
+        {currentUserRole === "cassiere" && (
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Typography variant="h6">
+              Totale: €{comanda.totale.toFixed(2)}
             </Typography>
           </Box>
-        </Box>
-
-        <Divider sx={{ my: 2 }} />
-
-        <Typography variant="subtitle2" gutterBottom>
-          Piatti ordinati:
-        </Typography>
-        <Box sx={{ mb: 2 }}>
-          {comanda.dettagli_comanda.map((dettaglio) => (
-            <Box
-              key={dettaglio.id}
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-              sx={{ py: 0.5 }}
-            >
-              <Box>
-                <Typography variant="body2" fontWeight="medium">
-                  {dettaglio.menu?.nome}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {dettaglio.menu?.categoria}
-                </Typography>
-              </Box>
-              <Box textAlign="right">
-                <Typography variant="body2">
-                  {dettaglio.quantita}x €{dettaglio.prezzo_unitario.toFixed(2)}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  €{(dettaglio.quantita * dettaglio.prezzo_unitario).toFixed(2)}
-                </Typography>
-              </Box>
-            </Box>
-          ))}
-        </Box>
-
-        <Divider sx={{ my: 2 }} />
-
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          mb={2}
-        >
-          <Typography variant="h6">
-            Totale: €{comanda.totale.toFixed(2)}
-          </Typography>
-        </Box>
+        )}
 
         {comanda.note && (
-          <Box sx={{ mb: 2 }}>
+          <Box sx={{ mt: 1 }}>
             <Typography variant="body2" color="text.secondary">
               <strong>Note:</strong> {comanda.note}
-            </Typography>
-          </Box>
-        )}
-
-        {canModify && availableActions.length > 0 && (
-          <Box>
-            <Typography variant="body2" gutterBottom>
-              Azioni disponibili:
-            </Typography>
-            <ButtonGroup variant="outlined" size="small">
-              {availableActions.map((action) => (
-                <Button
-                  key={action.newStatus}
-                  onClick={() => handleStatusChange(action.newStatus)}
-                  disabled={updateComanda.isPending}
-                  color={
-                    action.color as
-                      | "inherit"
-                      | "primary"
-                      | "secondary"
-                      | "success"
-                      | "error"
-                      | "info"
-                      | "warning"
-                  }
-                >
-                  {action.label}
-                </Button>
-              ))}
-            </ButtonGroup>
-          </Box>
-        )}
-
-        {!canModify && availableActions.length > 0 && (
-          <Box sx={{ mt: 2 }}>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              fontStyle="italic"
-            >
-              ⚠️ Solo gli utenti dei reparti{" "}
-              {(() => {
-                const reparti = Array.from(
-                  new Set(
-                    comanda.dettagli_comanda
-                      .map((d) => d.reparto)
-                      .filter(Boolean)
-                  )
-                );
-                return reparti.length > 0
-                  ? reparti
-                      .map((r) => r.charAt(0).toUpperCase() + r.slice(1))
-                      .join(", ")
-                  : "Non assegnato";
-              })()}{" "}
-              possono modificare questa comanda
             </Typography>
           </Box>
         )}

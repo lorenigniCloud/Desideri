@@ -42,6 +42,7 @@ function CassaContent() {
 
       {tabValue === 0 && (
         <PermissionWrapper
+          currentUserRole={role || "cassiere"}
           requiredRole="cassiere"
           requireEdit={true}
           fallback={

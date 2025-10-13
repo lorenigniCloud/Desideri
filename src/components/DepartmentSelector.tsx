@@ -10,6 +10,8 @@ export const DepartmentSelector: React.FC = () => {
 
   const handleDepartmentSelect = (department: UserRole) => {
     const config = ROLE_CONFIGS[department];
+    // Scroll automatico in cima alla pagina
+    window.scrollTo({ top: 0, behavior: "smooth" });
     router.push(config.redirectPath);
   };
 

@@ -4,6 +4,7 @@ import { ComandaCard } from "@/components/ComandaCard";
 import { RepartoPageLayout } from "@/components/RepartoPageLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { useComande } from "@/hooks/useComande";
+import { ComandaCompleta } from "@/lib/supabase";
 import { Alert, Box, CircularProgress, Paper, Typography } from "@mui/material";
 import { useMemo } from "react";
 
@@ -11,13 +12,32 @@ function CucinaContent() {
   const { role } = useAuth();
   const { data: comande, isLoading, error } = useComande();
 
+  // Funzione per filtrare i piatti per reparto e raggrupparli per categoria
+  const filterComandeByReparto = (
+    comande: ComandaCompleta[],
+    reparto: string
+  ) => {
+    return comande
+      .map((comanda) => {
+        const filteredDettagli = comanda.dettagli_comanda.filter(
+          (d) => d.reparto === reparto
+        );
+
+        if (filteredDettagli.length === 0) return null;
+
+        return {
+          ...comanda,
+          dettagli_comanda: filteredDettagli,
+        };
+      })
+      .filter(Boolean) as ComandaCompleta[];
+  };
+
   const filteredComande = useMemo(() => {
     if (!comande) return { cucina: [] };
 
-    // Comande che hanno almeno un piatto per cucina
-    const cucina = comande.filter((c) =>
-      c.dettagli_comanda.some((d) => d.reparto === "cucina")
-    );
+    // Filtra le comande per reparto cucina
+    const cucina = filterComandeByReparto(comande, "cucina");
 
     return { cucina };
   }, [comande]);

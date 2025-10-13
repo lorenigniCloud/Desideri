@@ -1,12 +1,12 @@
 "use client";
 
-import { usePermissionsStore } from "@/stores/permissionsStore";
 import { UserRole } from "@/types/auth";
 import React from "react";
 
 interface PermissionWrapperProps {
   children: React.ReactNode;
   requiredRole: UserRole;
+  currentUserRole: UserRole;
   fallback?: React.ReactNode;
   requireEdit?: boolean; // Se true, richiede permessi di modifica, altrimenti solo visualizzazione
 }
@@ -14,16 +14,19 @@ interface PermissionWrapperProps {
 export const PermissionWrapper: React.FC<PermissionWrapperProps> = ({
   children,
   requiredRole,
+  currentUserRole,
   fallback = null,
   requireEdit = false,
 }) => {
-  const { canEdit, canView } = usePermissionsStore();
+  // Logica per controllare se l'utente può modificare il reparto specifico
+  const hasPermission = () => {
+    if (!requireEdit) return true; // Tutti possono visualizzare
 
-  const hasPermission = requireEdit
-    ? canEdit(requiredRole)
-    : canView(requiredRole);
+    // Solo il ruolo corrispondente può modificare il proprio reparto
+    return currentUserRole === requiredRole;
+  };
 
-  if (!hasPermission) {
+  if (!hasPermission()) {
     return <>{fallback}</>;
   }
 

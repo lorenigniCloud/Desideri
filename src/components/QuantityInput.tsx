@@ -32,8 +32,16 @@ export const QuantityInput: React.FC<QuantityInputProps> = ({
   };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = parseInt(event.target.value) || 0;
-    if (newValue >= min && newValue <= max) {
+    const inputValue = event.target.value;
+
+    // Permetti campo vuoto per digitazione
+    if (inputValue === "") {
+      onChange(0);
+      return;
+    }
+
+    const newValue = parseInt(inputValue);
+    if (!isNaN(newValue) && newValue >= min && newValue <= max) {
       onChange(newValue);
     }
   };
