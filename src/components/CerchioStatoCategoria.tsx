@@ -86,7 +86,7 @@ export const CerchioStatoCategoria: React.FC<CerchioStatoCategoriaProps> = ({
     }
 
     try {
-      const result = await serviCategoria.mutateAsync({
+      await serviCategoria.mutateAsync({
         comandaId,
         categoria,
         reparto: repartoCategoria,
@@ -126,6 +126,12 @@ export const CerchioStatoCategoria: React.FC<CerchioStatoCategoriaProps> = ({
     }
   };
 
+  const getCircularProgressSize = () => {
+    if (size === "small") return 16;
+    if (size === "large") return 32;
+    return 24;
+  };
+
   return (
     <>
       <Tooltip title={getTooltipText()}>
@@ -153,7 +159,7 @@ export const CerchioStatoCategoria: React.FC<CerchioStatoCategoriaProps> = ({
           >
             {serviCategoria.isPending ? (
               <CircularProgress
-                size={size === "small" ? 16 : size === "large" ? 32 : 24}
+                size={getCircularProgressSize()}
                 color={colore}
               />
             ) : (
