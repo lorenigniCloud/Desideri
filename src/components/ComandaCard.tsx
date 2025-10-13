@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
+import { sortCategoriesByOrder } from "@/lib/menu-utils";
 import { ComandaCompleta, StatoComanda } from "@/lib/supabase";
 import {
   AccessTime,
@@ -59,6 +60,13 @@ export const ComandaCard: React.FC<ComandaCardProps> = ({ comanda }) => {
     return labels[stato];
   };
 
+  const getBorderColor = (stato: StatoComanda) => {
+    if (stato === "nuovo") return "info.main";
+    if (stato.includes("pronto")) return "success.main";
+    if (stato.includes("in_")) return "warning.main";
+    return "divider";
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString("it-IT", {
       day: "2-digit",
@@ -76,14 +84,7 @@ export const ComandaCard: React.FC<ComandaCardProps> = ({ comanda }) => {
         maxHeight: expanded ? "none" : "300px",
         overflow: "hidden",
         border: 2,
-        borderColor:
-          comanda.stato === "nuovo"
-            ? "info.main"
-            : comanda.stato.includes("pronto")
-            ? "success.main"
-            : comanda.stato.includes("in_")
-            ? "warning.main"
-            : "divider",
+        borderColor: getBorderColor(comanda.stato),
         "&:hover": {
           boxShadow: 4,
         },
@@ -167,17 +168,6 @@ export const ComandaCard: React.FC<ComandaCardProps> = ({ comanda }) => {
         <Collapse in={expanded}>
           <Box>
             {(() => {
-              // Ordine delle categorie del menu
-              const categoriaOrder = [
-                "Antipasti",
-                "Primi Piatti",
-                "Secondi Piatti",
-                "Contorni",
-                "Dolci",
-                "Bevande",
-                "Servizio",
-              ];
-
               // Raggruppa i dettagli per categoria
               const dettagliByCategoria = comanda.dettagli_comanda.reduce(
                 (acc, dettaglio) => {
@@ -192,10 +182,12 @@ export const ComandaCard: React.FC<ComandaCardProps> = ({ comanda }) => {
               );
 
               // Ordina le categorie secondo l'ordine del menu
-              const categorieOrdinate = categoriaOrder.filter(
-                (cat) =>
-                  dettagliByCategoria[cat] &&
-                  dettagliByCategoria[cat].length > 0
+              const categorieOrdinate = sortCategoriesByOrder(
+                Object.keys(dettagliByCategoria).filter(
+                  (cat) =>
+                    dettagliByCategoria[cat] &&
+                    dettagliByCategoria[cat].length > 0
+                )
               );
 
               return categorieOrdinate.map((categoria) => (

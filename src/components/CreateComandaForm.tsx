@@ -3,6 +3,7 @@
 import { MenuItemSimple } from "@/components/MenuItemSimple";
 import { useCreateComanda } from "@/hooks/useComande";
 import { useMenuByCategory } from "@/hooks/useMenu";
+import { sortMenuByCategory } from "@/lib/menu-utils";
 import { CAMERIERI } from "@/lib/supabase";
 import { CreateComandaRequest, PiattoComanda } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -297,7 +298,7 @@ export const CreateComandaForm: React.FC = () => {
           </Typography>
 
           {menuByCategory &&
-            Object.entries(menuByCategory).map(([categoria, items]) => (
+            sortMenuByCategory(menuByCategory).map(([categoria, items]) => (
               <Accordion key={categoria}>
                 <AccordionSummary
                   expandIcon={<ExpandMore />}
