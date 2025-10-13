@@ -63,7 +63,9 @@ type ComandaFormData = {
 };
 
 export const CreateComandaForm: React.FC = () => {
-  const [quantities, setQuantities] = useState<Record<number, number>>({});
+  const [quantities, setQuantities] = useState<Record<number, number | null>>(
+    {}
+  );
   const [showItemsError, setShowItemsError] = useState(false);
 
   const { data: menuByCategory, isLoading: menuLoading } = useMenuByCategory();
@@ -86,7 +88,7 @@ export const CreateComandaForm: React.FC = () => {
   });
 
   // Gestione quantità
-  const handleQuantityChange = (itemId: number, quantity: number) => {
+  const handleQuantityChange = (itemId: number, quantity: number | null) => {
     setQuantities((prev) => ({
       ...prev,
       [itemId]: quantity,
@@ -102,7 +104,7 @@ export const CreateComandaForm: React.FC = () => {
 
     Object.entries(menuByCategory).forEach(([, categoryItems]) => {
       categoryItems.forEach((item) => {
-        const quantity = quantities[item.id] || 0;
+        const quantity = quantities[item.id] ?? 0;
         if (quantity > 0) {
           items.push({
             menu_id: item.id,
@@ -321,7 +323,7 @@ export const CreateComandaForm: React.FC = () => {
                       <MenuItemSimple
                         key={item.id}
                         item={item}
-                        quantity={quantities[item.id] || 0}
+                        quantity={quantities[item.id] ?? null}
                         onQuantityChange={(quantity) =>
                           handleQuantityChange(item.id, quantity)
                         }

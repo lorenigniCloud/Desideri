@@ -5,8 +5,8 @@ import { Box, IconButton, TextField } from "@mui/material";
 import React from "react";
 
 interface QuantityInputProps {
-  value: number;
-  onChange: (value: number) => void;
+  value: number | null;
+  onChange: (value: number | null) => void;
   min?: number;
   max?: number;
   disabled?: boolean;
@@ -20,14 +20,16 @@ export const QuantityInput: React.FC<QuantityInputProps> = ({
   disabled = false,
 }) => {
   const handleIncrement = () => {
-    if (value < max) {
-      onChange(value + 1);
+    const currentValue = value ?? 0;
+    if (currentValue < max) {
+      onChange(currentValue + 1);
     }
   };
 
   const handleDecrement = () => {
-    if (value > min) {
-      onChange(value - 1);
+    const currentValue = value ?? 0;
+    if (currentValue > min) {
+      onChange(currentValue - 1);
     }
   };
 
@@ -36,7 +38,7 @@ export const QuantityInput: React.FC<QuantityInputProps> = ({
 
     // Permetti campo vuoto per digitazione
     if (inputValue === "") {
-      onChange(0);
+      onChange(null);
       return;
     }
 
@@ -58,7 +60,7 @@ export const QuantityInput: React.FC<QuantityInputProps> = ({
     >
       <IconButton
         onClick={handleDecrement}
-        disabled={disabled || value <= min}
+        disabled={disabled || (value ?? 0) <= min}
         size="small"
         sx={{
           border: 1,
@@ -72,7 +74,7 @@ export const QuantityInput: React.FC<QuantityInputProps> = ({
       </IconButton>
 
       <TextField
-        value={value}
+        value={value ?? ""}
         onChange={handleInputChange}
         disabled={disabled}
         type="number"
@@ -82,20 +84,32 @@ export const QuantityInput: React.FC<QuantityInputProps> = ({
           "& .MuiInputBase-input": {
             textAlign: "center",
             padding: "8px",
+            // Rimuove le frecce di incremento/decremento
+            "&::-webkit-outer-spin-button": {
+              WebkitAppearance: "none",
+              margin: 0,
+            },
+            "&::-webkit-inner-spin-button": {
+              WebkitAppearance: "none",
+              margin: 0,
+            },
           },
         }}
         slotProps={{
           htmlInput: {
             min,
             max,
-            style: { textAlign: "center" },
+            style: {
+              textAlign: "center",
+              MozAppearance: "textfield", // Firefox
+            },
           },
         }}
       />
 
       <IconButton
         onClick={handleIncrement}
-        disabled={disabled || value >= max}
+        disabled={disabled || (value ?? 0) >= max}
         size="small"
         sx={{
           border: 1,

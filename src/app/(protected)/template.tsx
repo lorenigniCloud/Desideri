@@ -2,10 +2,11 @@
 
 import { PermissionWrapper } from "@/components/PermissionWrapper";
 import { useAuth } from "@/hooks/useAuth";
+import { usePermissionsStore } from "@/stores/permissionsStore";
 import { UserRole } from "@/types/auth";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { usePathname } from "next/navigation";
-import React from "react";
+import React, { useEffect } from "react";
 
 interface ProtectedTemplateProps {
   children: React.ReactNode;
@@ -23,7 +24,14 @@ export default function ProtectedTemplate({
 }: ProtectedTemplateProps) {
   const { isAuthenticated, isHydrated, role } = useAuth();
   const pathname = usePathname();
+  const { setUserRole } = usePermissionsStore();
   const requiredRole = ROUTE_PERMISSIONS[pathname];
+
+  useEffect(() => {
+    if (!role) {
+      setUserRole(null);
+    }
+  }, [role, setUserRole]);
 
   // Mostra loading durante l'idratazione
   if (!isHydrated) {

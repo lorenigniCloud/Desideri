@@ -26,7 +26,7 @@ interface ComandaCardProps {
 
 export const ComandaCard: React.FC<ComandaCardProps> = ({ comanda }) => {
   const [expanded, setExpanded] = useState(false);
-  const { canSeeCliente, canSeePrices } = useAuth();
+  const { canSeeCliente, canSeePrices, canSeeQuantity } = useAuth();
 
   const getStatusColor = (stato: StatoComanda) => {
     switch (stato) {
@@ -236,9 +236,11 @@ export const ComandaCard: React.FC<ComandaCardProps> = ({ comanda }) => {
                         <Typography variant="body2" fontWeight="medium">
                           {dettaglio.menu?.nome}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {dettaglio.quantita}
-                        </Typography>
+                        {canSeeQuantity() && (
+                          <Typography variant="body2" color="text.secondary">
+                            {dettaglio.quantita}
+                          </Typography>
+                        )}
                       </Box>
                       {canSeePrices() && (
                         <Box textAlign="right">

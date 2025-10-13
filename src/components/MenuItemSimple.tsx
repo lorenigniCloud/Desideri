@@ -8,8 +8,8 @@ import { QuantityInput } from "./QuantityInput";
 
 interface MenuItemSimpleProps {
   item: Menu;
-  quantity: number;
-  onQuantityChange: (quantity: number) => void;
+  quantity: number | null;
+  onQuantityChange: (quantity: number | null) => void;
 }
 
 export const MenuItemSimple: React.FC<MenuItemSimpleProps> = ({
@@ -34,7 +34,7 @@ export const MenuItemSimple: React.FC<MenuItemSimpleProps> = ({
           border: 1,
           borderColor: "divider",
           borderRadius: 1,
-          bgcolor: quantity > 0 ? "action.selected" : "background.paper",
+          bgcolor: (quantity ?? 0) > 0 ? "action.selected" : "background.paper",
           transition: "all 0.2s",
           "&:hover": {
             bgcolor: "action.hover",

@@ -18,6 +18,7 @@ export const useAuth = () => {
   const isCameriere = () => role === "cameriere";
   const canSeePrices = () => isCassiere() || isCameriere();
   const canSeeCliente = () => isCassiere() || isCameriere();
+  const canSeeQuantity = () => isCuoca() || isBracerista();
 
   const canModifyComanda = (comandaReparto: string) => {
     if (isCassiere()) return true; // Il cassiere può modificare tutto
@@ -37,5 +38,6 @@ export const useAuth = () => {
     canSeePrices,
     canSeeCliente,
     canModifyComanda,
+    canSeeQuantity,
   };
 };
