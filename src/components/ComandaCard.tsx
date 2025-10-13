@@ -20,6 +20,7 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useState } from "react";
+import { CerchioStatoCategoria } from "./CerchioStatoCategoria";
 
 interface ComandaCardProps {
   comanda: ComandaCompleta;
@@ -192,21 +193,33 @@ export const ComandaCard: React.FC<ComandaCardProps> = ({ comanda }) => {
 
               return categorieOrdinate.map((categoria) => (
                 <Box key={categoria} sx={{ mb: 2 }}>
-                  {/* Header categoria */}
-                  <Typography
-                    variant="subtitle2"
-                    color="primary"
-                    sx={{
-                      fontWeight: "bold",
-                      mb: 1,
-                      ml: 2,
-                      borderBottom: 1,
-                      borderColor: "divider",
-                      pb: 0.5,
-                    }}
+                  {/* Header categoria con cerchio di stato */}
+                  <Box
+                    display="flex"
+                    alignItems="flex-start"
+                    gap={1}
+                    sx={{ mb: 1, ml: 2 }}
                   >
-                    {categoria}
-                  </Typography>
+                    <Typography
+                      variant="subtitle2"
+                      color="primary"
+                      sx={{
+                        fontWeight: "bold",
+                        borderBottom: 1,
+                        borderColor: "divider",
+                        pb: 0.5,
+                        flexGrow: 1,
+                      }}
+                    >
+                      {categoria}
+                    </Typography>
+                    <CerchioStatoCategoria
+                      categoria={categoria}
+                      dettagli={dettagliByCategoria[categoria]}
+                      comandaId={comanda.id}
+                      size="small"
+                    />
+                  </Box>
 
                   {/* Piatti della categoria */}
                   {dettagliByCategoria[categoria].map((dettaglio) => (

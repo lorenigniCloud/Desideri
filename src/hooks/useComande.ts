@@ -21,6 +21,7 @@ export function useComande() {
             quantita,
             prezzo_unitario,
             reparto,
+            servito,
             menu (nome, categoria)
           )
         `
@@ -48,6 +49,7 @@ export function useComandeByReparto(reparto: RepartoType) {
             quantita,
             prezzo_unitario,
             reparto,
+            servito,
             menu (nome, categoria)
           )
         `
@@ -76,6 +78,7 @@ export function useComandeByCamera(nomeCameriere: string) {
             quantita,
             prezzo_unitario,
             reparto,
+            servito,
             menu (nome, categoria)
           )
         `

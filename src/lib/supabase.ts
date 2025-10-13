@@ -17,7 +17,7 @@ export interface Menu {
   created_at: string;
 }
 
-// Tipi per stati specifici per reparto
+// Tipi per stati specifici per reparto - DEPRECATO: ora lo stato è sui dettagli
 export type StatoComanda =
   | "nuovo" // Cassa: appena creato
   | "comanda_ricevuta" // Reparto: comanda ricevuta
@@ -25,6 +25,15 @@ export type StatoComanda =
   | "comanda_conclusa" // Reparto: comanda conclusa
   | "servito" // Completato
   | "cancellato"; // Annullato
+
+// Nuovi stati per i singoli piatti (dettagli_comanda)
+export type StatoPiatto =
+  | "in_preparazione" // Piatto in lavorazione
+  | "antipasto_servito" // Antipasto servito (solo cucina)
+  | "primo_servito" // Primo piatto servito (solo cucina)
+  | "secondo_servito" // Secondo piatto servito (solo cucina)
+  | "comanda_conclusa" // Piatto completato (brace e cucina)
+  | "cancellato"; // Piatto cancellato
 
 export type RepartoType = "cassa" | "brace" | "cucina";
 
@@ -56,6 +65,7 @@ export interface DettaglioComanda {
   quantita: number;
   prezzo_unitario: number;
   reparto: RepartoType;
+  servito: boolean;
   created_at: string;
   menu?: Menu;
 }
