@@ -89,11 +89,7 @@ function CassaContent() {
           {comande && comande.length > 0 && (
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               {comande.map((comanda) => (
-                <ComandaCard
-                  key={comanda.id}
-                  comanda={comanda}
-                  currentUserRole={role || "cassiere"}
-                />
+                <ComandaCard key={comanda.id} comanda={comanda} />
               ))}
             </Box>
           )}

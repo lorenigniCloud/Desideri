@@ -2,14 +2,12 @@
 
 import { ComandaCard } from "@/components/ComandaCard";
 import { RepartoPageLayout } from "@/components/RepartoPageLayout";
-import { useAuth } from "@/hooks/useAuth";
 import { useComande } from "@/hooks/useComande";
 import { ComandaCompleta } from "@/lib/supabase";
 import { Alert, Box, CircularProgress, Paper, Typography } from "@mui/material";
 import { useMemo } from "react";
 
 function CucinaContent() {
-  const { role } = useAuth();
   const { data: comande, isLoading, error } = useComande();
 
   // Funzione per filtrare i piatti per reparto e raggrupparli per categoria
@@ -61,11 +59,7 @@ function CucinaContent() {
     return (
       <Box>
         {comandesToShow.map((comanda) => (
-          <ComandaCard
-            key={comanda.id}
-            comanda={comanda}
-            currentUserRole={role || "cuoca"}
-          />
+          <ComandaCard key={comanda.id} comanda={comanda} />
         ))}
       </Box>
     );

@@ -1,7 +1,7 @@
 "use client";
 
+import { useAuth } from "@/hooks/useAuth";
 import { ComandaCompleta, StatoComanda } from "@/lib/supabase";
-import { UserRole } from "@/types/auth";
 import {
   AccessTime,
   ExpandMore,
@@ -22,14 +22,11 @@ import React, { useState } from "react";
 
 interface ComandaCardProps {
   comanda: ComandaCompleta;
-  currentUserRole: UserRole;
 }
 
-export const ComandaCard: React.FC<ComandaCardProps> = ({
-  comanda,
-  currentUserRole,
-}) => {
+export const ComandaCard: React.FC<ComandaCardProps> = ({ comanda }) => {
   const [expanded, setExpanded] = useState(false);
+  const { canSeeCliente, canSeePrices } = useAuth();
 
   const getStatusColor = (stato: StatoComanda) => {
     switch (stato) {
@@ -140,15 +137,14 @@ export const ComandaCard: React.FC<ComandaCardProps> = ({
             <Typography variant="body2">{comanda.nome_cameriere}</Typography>
           </Box>
 
-          {currentUserRole === "cassiere" ||
-            (currentUserRole === "cameriere" && (
-              <Box display="flex" alignItems="center" gap={0.5}>
-                <Person fontSize="small" />
-                <Typography variant="body2" color="text.secondary">
-                  {comanda.cliente}
-                </Typography>
-              </Box>
-            ))}
+          {canSeeCliente() && (
+            <Box display="flex" alignItems="center" gap={0.5}>
+              <Person fontSize="small" />
+              <Typography variant="body2" color="text.secondary">
+                {comanda.cliente}
+              </Typography>
+            </Box>
+          )}
         </Box>
 
         <Divider sx={{ my: 1 }} />
@@ -170,52 +166,105 @@ export const ComandaCard: React.FC<ComandaCardProps> = ({
 
         <Collapse in={expanded}>
           <Box>
-            {comanda.dettagli_comanda.map((dettaglio) => (
-              <Box
-                key={dettaglio.id}
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                sx={{ py: 0.5 }}
-              >
-                <Box
-                  display="flex"
-                  flexDirection="row"
-                  alignItems="center"
-                  justifyContent="space-between"
-                  marginLeft={2}
-                  gap={1}
-                >
-                  <Typography variant="body2" fontWeight="medium">
-                    {dettaglio.menu?.nome}
+            {(() => {
+              // Ordine delle categorie del menu
+              const categoriaOrder = [
+                "Antipasti",
+                "Primi Piatti",
+                "Secondi Piatti",
+                "Contorni",
+                "Dolci",
+                "Bevande",
+                "Servizio",
+              ];
+
+              // Raggruppa i dettagli per categoria
+              const dettagliByCategoria = comanda.dettagli_comanda.reduce(
+                (acc, dettaglio) => {
+                  const categoria = dettaglio.menu?.categoria || "Altro";
+                  if (!acc[categoria]) {
+                    acc[categoria] = [];
+                  }
+                  acc[categoria].push(dettaglio);
+                  return acc;
+                },
+                {} as Record<string, typeof comanda.dettagli_comanda>
+              );
+
+              // Ordina le categorie secondo l'ordine del menu
+              const categorieOrdinate = categoriaOrder.filter(
+                (cat) =>
+                  dettagliByCategoria[cat] &&
+                  dettagliByCategoria[cat].length > 0
+              );
+
+              return categorieOrdinate.map((categoria) => (
+                <Box key={categoria} sx={{ mb: 2 }}>
+                  {/* Header categoria */}
+                  <Typography
+                    variant="subtitle2"
+                    color="primary"
+                    sx={{
+                      fontWeight: "bold",
+                      mb: 1,
+                      ml: 2,
+                      borderBottom: 1,
+                      borderColor: "divider",
+                      pb: 0.5,
+                    }}
+                  >
+                    {categoria}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {dettaglio.quantita}
-                  </Typography>
-                </Box>
-                {currentUserRole === "cassiere" ||
-                  (currentUserRole === "cameriere" && (
-                    <Box textAlign="right">
-                      <Typography variant="body2">
-                        {dettaglio.quantita}x €
-                        {dettaglio.prezzo_unitario.toFixed(2)}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        €
-                        {(
-                          dettaglio.quantita * dettaglio.prezzo_unitario
-                        ).toFixed(2)}
-                      </Typography>
+
+                  {/* Piatti della categoria */}
+                  {dettagliByCategoria[categoria].map((dettaglio) => (
+                    <Box
+                      key={dettaglio.id}
+                      display="flex"
+                      justifyContent="space-between"
+                      alignItems="center"
+                      sx={{ py: 0.5, ml: 4 }}
+                    >
+                      <Box
+                        display="flex"
+                        flexDirection="row"
+                        alignItems="center"
+                        justifyContent="space-between"
+                        gap={1}
+                        sx={{ flex: 1 }}
+                      >
+                        <Typography variant="body2" fontWeight="medium">
+                          {dettaglio.menu?.nome}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {dettaglio.quantita}
+                        </Typography>
+                      </Box>
+                      {canSeePrices() && (
+                        <Box textAlign="right">
+                          <Typography variant="body2">
+                            {dettaglio.quantita}x €
+                            {dettaglio.prezzo_unitario.toFixed(2)}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            €
+                            {(
+                              dettaglio.quantita * dettaglio.prezzo_unitario
+                            ).toFixed(2)}
+                          </Typography>
+                        </Box>
+                      )}
                     </Box>
                   ))}
-              </Box>
-            ))}
+                </Box>
+              ));
+            })()}
           </Box>
         </Collapse>
 
         <Divider sx={{ mt: 1 }} />
 
-        {currentUserRole === "cassiere" && (
+        {canSeePrices() && (
           <Box
             display="flex"
             justifyContent="space-between"

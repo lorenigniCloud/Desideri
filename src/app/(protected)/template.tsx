@@ -2,11 +2,10 @@
 
 import { PermissionWrapper } from "@/components/PermissionWrapper";
 import { useAuth } from "@/hooks/useAuth";
-import { usePermissionsStore } from "@/stores/permissionsStore";
 import { UserRole } from "@/types/auth";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { usePathname } from "next/navigation";
-import React, { useEffect } from "react";
+import React from "react";
 
 interface ProtectedTemplateProps {
   children: React.ReactNode;
@@ -14,25 +13,16 @@ interface ProtectedTemplateProps {
 
 // Mapping delle route ai ruoli richiesti
 const ROUTE_PERMISSIONS: Record<string, UserRole> = {
-  "/brace": "bracerista",
-  "/cassa": "cassiere",
-  "/cucina": "cuoca",
+  "/brace/": "bracerista",
+  "/cassa/": "cassiere",
+  "/cucina/": "cuoca",
 };
 
 export default function ProtectedTemplate({
   children,
 }: ProtectedTemplateProps) {
-  console.log("ProtectedTemplate");
   const { isAuthenticated, isHydrated, role } = useAuth();
-  const { setUserRole } = usePermissionsStore();
   const pathname = usePathname();
-
-  // Sincronizza il ruolo utente con il store dei permessi
-  useEffect(() => {
-    setUserRole(role);
-  }, [role, setUserRole]);
-
-  // Determina il ruolo richiesto per la route corrente
   const requiredRole = ROUTE_PERMISSIONS[pathname];
 
   // Mostra loading durante l'idratazione

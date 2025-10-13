@@ -61,11 +61,7 @@ function BraceContent() {
     return (
       <Box>
         {comandesToShow.map((comanda) => (
-          <ComandaCard
-            key={comanda.id}
-            comanda={comanda}
-            currentUserRole={role || "bracerista"}
-          />
+          <ComandaCard key={comanda.id} comanda={comanda} />
         ))}
       </Box>
     );
