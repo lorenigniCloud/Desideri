@@ -21,7 +21,6 @@ import {
   Alert,
   Box,
   Button,
-  Chip,
   Divider,
   FormControl,
   InputLabel,
@@ -359,44 +358,62 @@ export const CreateComandaForm: React.FC = () => {
             </Typography>
           ) : (
             <>
-              {selectedItems.map((item) => {
-                // Trova il menu item per ottenere nome e categoria
-                const menuItem = Object.values(menuByCategory || {})
-                  .flat()
-                  .find((m) => m.id === item.menu_id);
+              {(() => {
+                // Raggruppa i piatti selezionati per categoria
+                const piattiPerCategoria = selectedItems.reduce((acc, item) => {
+                  const menuItem = Object.values(menuByCategory || {})
+                    .flat()
+                    .find((m) => m.id === item.menu_id);
 
-                if (!menuItem) return null;
+                  if (!menuItem) return acc;
 
-                return (
-                  <Box key={item.menu_id} sx={{ mb: 2 }}>
-                    <Box
-                      display="flex"
-                      justifyContent="space-between"
-                      alignItems="center"
-                    >
-                      <Box sx={{ flexGrow: 1 }}>
-                        <Typography variant="body1" fontWeight="medium">
-                          {menuItem.nome}
-                        </Typography>
-                        <Chip
-                          label={menuItem.categoria}
-                          size="small"
-                          variant="outlined"
-                          sx={{ mt: 0.5 }}
-                        />
-                      </Box>
-                      <Typography variant="body2" sx={{ ml: 2 }}>
-                        x{item.quantita}
+                  const categoria = menuItem.categoria;
+                  if (!acc[categoria]) {
+                    acc[categoria] = [];
+                  }
+                  acc[categoria].push({ ...item, menuItem });
+                  return acc;
+                }, {} as Record<string, Array<{ menuItem: { nome: string; categoria: string; prezzo: number } } & PiattoComanda>>);
+
+                // Usa sortMenuByCategory per ordinare le categorie
+                return sortMenuByCategory(piattiPerCategoria).map(
+                  ([categoria, items]) => (
+                    <Box key={categoria} sx={{ mb: 2 }}>
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight="bold"
+                        sx={{ mb: 1, color: "primary.main" }}
+                      >
+                        {categoria}
                       </Typography>
+                      {items.map((item) => (
+                        <Box key={item.menu_id} sx={{ mb: 1, ml: 2 }}>
+                          <Box
+                            display="flex"
+                            justifyContent="space-between"
+                            alignItems="center"
+                          >
+                            <Box sx={{ flexGrow: 1 }}>
+                              <Typography variant="body2" fontWeight="medium">
+                                {item.menuItem.nome}
+                              </Typography>
+                            </Box>
+                            <Typography variant="body2" sx={{ ml: 2 }}>
+                              x{item.quantita}
+                            </Typography>
+                          </Box>
+                          <Typography variant="caption" color="text.secondary">
+                            €{item.prezzo_unitario.toFixed(2)} x {item.quantita}{" "}
+                            = €
+                            {(item.prezzo_unitario * item.quantita).toFixed(2)}
+                          </Typography>
+                        </Box>
+                      ))}
+                      <Divider sx={{ mt: 1 }} />
                     </Box>
-                    <Typography variant="body2" color="text.secondary">
-                      €{item.prezzo_unitario.toFixed(2)} x {item.quantita} = €
-                      {(item.prezzo_unitario * item.quantita).toFixed(2)}
-                    </Typography>
-                    <Divider sx={{ mt: 1 }} />
-                  </Box>
+                  )
                 );
-              })}
+              })()}
 
               <Box sx={{ mt: 3 }}>
                 <Typography variant="h6" align="right">
