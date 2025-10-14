@@ -1,4 +1,9 @@
-export type UserRole = "cassiere" | "bracerista" | "cuoca" | "cameriere";
+export type UserRole =
+  | "cassiere"
+  | "bracerista"
+  | "cuoca"
+  | "cameriere"
+  | "gestore-prenotazioni";
 
 export interface AuthState {
   isAuthenticated: boolean;
@@ -60,5 +65,15 @@ export const ROLE_CONFIGS: Record<UserRole, RoleConfig> = {
     redirectPath: "/brace",
     color: "#FF9800",
     icon: "🐎",
+  },
+  "gestore-prenotazioni": {
+    role: "gestore-prenotazioni",
+    password: "prenotazioni123",
+    department: "Prenotazioni",
+    departmentIcon: "📅",
+    displayName: "Gestore Prenotazioni",
+    redirectPath: "/prenotazioni",
+    color: "#E91E63",
+    icon: "📖",
   },
 };

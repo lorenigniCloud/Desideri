@@ -2,6 +2,7 @@
 export * from "./auth";
 export * from "./comanda";
 export * from "./menu";
+export * from "./prenotazioni";
 
 // Re-export dei tipi principali da supabase per comodità
 export type {
