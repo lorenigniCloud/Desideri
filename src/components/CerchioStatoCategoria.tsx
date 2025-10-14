@@ -7,9 +7,9 @@ import {
   getColoreCerchioCategoria,
 } from "@/lib/servito-utils";
 import {
-  CATEGORIA_TO_REPARTO,
   DettaglioComanda,
   RepartoType,
+  getRepartoFromCategoriaWithExceptions,
 } from "@/lib/supabase";
 import { Circle } from "@mui/icons-material";
 import {
@@ -58,11 +58,16 @@ export const CerchioStatoCategoria: React.FC<CerchioStatoCategoriaProps> = ({
 
   const userReparto = getUserReparto();
   const colore = getColoreCerchioCategoria(dettagli, categoria);
-  const canClick = canClickCerchioCategoria(
+
+  // Determina il reparto della categoria considerando le eccezioni
+  const repartoCategoria = getRepartoFromCategoriaWithExceptions(
     categoria,
-    userReparto,
-    CATEGORIA_TO_REPARTO
+    dettagli
   );
+
+  const canClick = canClickCerchioCategoria(categoria, userReparto, {
+    [categoria]: repartoCategoria,
+  });
 
   // Filtra i dettagli per questa categoria
   const dettagliCategoria = dettagli.filter(
@@ -80,11 +85,6 @@ export const CerchioStatoCategoria: React.FC<CerchioStatoCategoriaProps> = ({
   };
 
   const handleConfirmServi = async () => {
-    const repartoCategoria = CATEGORIA_TO_REPARTO[categoria];
-    if (!repartoCategoria) {
-      return;
-    }
-
     try {
       await serviCategoria.mutateAsync({
         comandaId,

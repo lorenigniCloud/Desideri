@@ -100,3 +100,21 @@ export const getRepartoFromCategoria = (
 
   return CATEGORIA_TO_REPARTO[categoria] || "cucina";
 };
+
+// Funzione per determinare il reparto di una categoria considerando le eccezioni
+export const getRepartoFromCategoriaWithExceptions = (
+  categoria: string,
+  dettagli: DettaglioComanda[]
+): RepartoType => {
+  // Se ci sono dettagli, controlla se c'è qualche eccezione
+  if (dettagli.length > 0) {
+    const hasTrippa = dettagli.some((d) =>
+      d.menu?.nome?.toLowerCase().includes("trippa")
+    );
+    if (hasTrippa) {
+      return "cucina"; // Se c'è Trippa, la categoria va in cucina
+    }
+  }
+
+  return CATEGORIA_TO_REPARTO[categoria] || "cucina";
+};
