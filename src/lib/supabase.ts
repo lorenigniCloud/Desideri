@@ -39,11 +39,18 @@ export type RepartoType = "cassa" | "brace" | "cucina";
 
 // Lista hardcoded dei camerieri
 export const CAMERIERI = [
-  "Cameriere 1",
-  "Cameriere 2",
-  "Cameriere 3",
-  "Cameriere 4",
-  "Cameriere 5",
+  "Andrea",
+  "Anna",
+  "Ahmed",
+  "Carmen",
+  "Francesca",
+  "Marco",
+  "Michele",
+  "Nish",
+  "Raffaello",
+  "Stefano",
+  "Valentina",
+  "Zidan",
 ];
 
 export interface Comanda {

@@ -3,6 +3,7 @@
 import { ComandaCard } from "@/components/ComandaCard";
 import { RepartoPageLayout } from "@/components/RepartoPageLayout";
 import { TotalePiattiDaServire } from "@/components/TotalePiattiDaServire";
+import { WaiterFilter } from "@/components/WaiterFilter";
 import { useComande } from "@/hooks/useComande";
 import { filtraESeparaComandePerReparto } from "@/lib/comanda-status-utils";
 import { ComandaCompleta } from "@/lib/supabase";
@@ -19,13 +20,23 @@ import { useMemo, useState } from "react";
 
 function CucinaContent() {
   const [tabValue, setTabValue] = useState(0);
+  const [selectedCameriere, setSelectedCameriere] = useState("");
   const { data: comande, isLoading, error } = useComande();
+
+  // Filtra le comande per cameriere se selezionato
+  const comandeFiltrate = useMemo(() => {
+    if (!comande) return [];
+    if (!selectedCameriere) return comande;
+    return comande.filter(
+      (comanda) => comanda.nome_cameriere === selectedCameriere
+    );
+  }, [comande, selectedCameriere]);
 
   // Filtra e separa le comande per reparto cucina
   const { attive: comandeAttive, concluse: comandeConcluse } = useMemo(() => {
-    if (!comande) return { attive: [], concluse: [] };
-    return filtraESeparaComandePerReparto(comande, "cucina");
-  }, [comande]);
+    if (!comandeFiltrate) return { attive: [], concluse: [] };
+    return filtraESeparaComandePerReparto(comandeFiltrate, "cucina");
+  }, [comandeFiltrate]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -82,6 +93,11 @@ function CucinaContent() {
       comandeCount={comandeAttive.length + comandeConcluse.length}
       comandeLabel="👩‍🍳 Comande Cucina"
     >
+      <WaiterFilter
+        selectedCameriere={selectedCameriere}
+        onCameriereChange={setSelectedCameriere}
+      />
+
       <Paper sx={{ mb: 3 }}>
         <Tabs value={tabValue} onChange={handleTabChange} centered>
           <Tab label={`📋 Ordini Attivi (${comandeAttive.length})`} />

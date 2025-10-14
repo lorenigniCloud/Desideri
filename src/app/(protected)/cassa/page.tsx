@@ -4,6 +4,7 @@ import { CassaPageLayout } from "@/components/CassaPageLayout";
 import { ComandaCard } from "@/components/ComandaCard";
 import { CreateComandaForm } from "@/components/CreateComandaForm";
 import { PermissionWrapper } from "@/components/PermissionWrapper";
+import { WaiterFilter } from "@/components/WaiterFilter";
 import { useAuth } from "@/hooks/useAuth";
 import { useComande } from "@/hooks/useComande";
 import { separaComandeComplete } from "@/lib/comanda-status-utils";
@@ -20,14 +21,24 @@ import { useMemo, useState } from "react";
 
 function CassaContent() {
   const [tabValue, setTabValue] = useState(0);
+  const [selectedCameriere, setSelectedCameriere] = useState("");
   const { data: comande, isLoading, error } = useComande();
   const { role } = useAuth();
 
+  // Filtra le comande per cameriere se selezionato
+  const comandeFiltrate = useMemo(() => {
+    if (!comande) return [];
+    if (!selectedCameriere) return comande;
+    return comande.filter(
+      (comanda) => comanda.nome_cameriere === selectedCameriere
+    );
+  }, [comande, selectedCameriere]);
+
   // Separa le comande in attive e concluse
   const { attive: comandeAttive, concluse: comandeConcluse } = useMemo(() => {
-    if (!comande) return { attive: [], concluse: [] };
-    return separaComandeComplete(comande);
-  }, [comande]);
+    if (!comandeFiltrate) return { attive: [], concluse: [] };
+    return separaComandeComplete(comandeFiltrate);
+  }, [comandeFiltrate]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -40,6 +51,12 @@ function CassaContent() {
       description="Gestione ordini e pagamenti"
       department="cassiere"
     >
+      <WaiterFilter
+        selectedCameriere={selectedCameriere}
+        onCameriereChange={setSelectedCameriere}
+        showTitle={false}
+      />
+
       <Paper sx={{ mb: 3 }}>
         <Tabs
           value={tabValue}

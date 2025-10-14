@@ -76,7 +76,7 @@ export const CerchioStatoCategoria: React.FC<CerchioStatoCategoriaProps> = ({
   const tuttiServiti = dettagliCategoria.every((d) => d.servito);
 
   const handleClick = () => {
-    if (!canClick || tuttiServiti || serviCategoria.isPending) {
+    if (!canClick || serviCategoria.isPending) {
       return;
     }
 
@@ -86,11 +86,14 @@ export const CerchioStatoCategoria: React.FC<CerchioStatoCategoriaProps> = ({
 
   const handleConfirmServi = async () => {
     try {
+      // Toggle: se tutti serviti, metti a false, altrimenti a true
+      const nuovoStato = !tuttiServiti;
+
       await serviCategoria.mutateAsync({
         comandaId,
         categoria,
         reparto: repartoCategoria,
-        servito: true,
+        servito: nuovoStato,
       });
       setShowConfirmDialog(false);
     } catch (error) {
@@ -100,18 +103,18 @@ export const CerchioStatoCategoria: React.FC<CerchioStatoCategoriaProps> = ({
   };
 
   const getTooltipText = () => {
-    if (tuttiServiti) {
-      return `${categoria}: Tutto Servito`;
-    }
-
     const servitiCount = dettagliCategoria.filter((d) => d.servito).length;
     const totaleCount = dettagliCategoria.length;
 
-    if (servitiCount === 0) {
-      return `${categoria}: Non Servito (0/${totaleCount})`;
+    if (tuttiServiti) {
+      return `${categoria}: Tutto Servito - Clicca per riportare a non servito`;
     }
 
-    return `${categoria}: Parzialmente Servito (${servitiCount}/${totaleCount})`;
+    if (servitiCount === 0) {
+      return `${categoria}: Non Servito (0/${totaleCount}) - Clicca per servire`;
+    }
+
+    return `${categoria}: Parzialmente Servito (${servitiCount}/${totaleCount}) - Clicca per servire tutto`;
   };
 
   const getSizeValue = () => {
@@ -138,18 +141,17 @@ export const CerchioStatoCategoria: React.FC<CerchioStatoCategoriaProps> = ({
         <span>
           <IconButton
             onClick={handleClick}
-            disabled={!canClick || tuttiServiti || serviCategoria.isPending}
+            disabled={!canClick || serviCategoria.isPending}
             size={getSizeValue()}
             sx={{
               color: `${colore}.main`,
-              "&:hover":
-                canClick && !tuttiServiti
-                  ? {
-                      backgroundColor: `${colore}.light`,
-                      opacity: 0.8,
-                    }
-                  : {},
-              cursor: canClick && !tuttiServiti ? "pointer" : "default",
+              "&:hover": canClick
+                ? {
+                    backgroundColor: `${colore}.light`,
+                    opacity: 0.8,
+                  }
+                : {},
+              cursor: canClick ? "pointer" : "default",
               padding: size === "small" ? 0.5 : 1,
             }}
             style={{
@@ -175,11 +177,22 @@ export const CerchioStatoCategoria: React.FC<CerchioStatoCategoriaProps> = ({
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Conferma Servizio</DialogTitle>
+        <DialogTitle>
+          {tuttiServiti ? "Riporta a Non Servito" : "Conferma Servizio"}
+        </DialogTitle>
         <DialogContent>
           <Typography>
-            Sei sicuro di voler segnare tutti i piatti della categoria{" "}
-            <strong>{categoria}</strong> come serviti?
+            {tuttiServiti ? (
+              <>
+                Sei sicuro di voler riportare tutti i piatti della categoria{" "}
+                <strong>{categoria}</strong> a non serviti?
+              </>
+            ) : (
+              <>
+                Sei sicuro di voler segnare tutti i piatti della categoria{" "}
+                <strong>{categoria}</strong> come serviti?
+              </>
+            )}
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -189,10 +202,15 @@ export const CerchioStatoCategoria: React.FC<CerchioStatoCategoriaProps> = ({
           <Button
             onClick={handleConfirmServi}
             variant="contained"
-            color="success"
+            color={tuttiServiti ? "warning" : "success"}
             disabled={serviCategoria.isPending}
           >
-            {serviCategoria.isPending ? "Servendo..." : "Conferma"}
+            {(() => {
+              if (serviCategoria.isPending) {
+                return tuttiServiti ? "Riportando..." : "Servendo...";
+              }
+              return tuttiServiti ? "Riporta" : "Conferma";
+            })()}
           </Button>
         </DialogActions>
       </Dialog>
