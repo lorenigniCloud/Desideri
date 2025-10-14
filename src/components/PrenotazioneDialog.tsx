@@ -109,7 +109,7 @@ export const PrenotazioneDialog: React.FC<PrenotazioneDialogProps> = ({
     }
 
     const prenotazioneData: CreatePrenotazioneRequest = {
-      giorno,
+      giorno: giorno,
       turno: turno as TurnoValue,
       zona: zona as Zona,
       numero_tavolo: numeroTavolo,

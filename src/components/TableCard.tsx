@@ -2,16 +2,7 @@
 
 import { getCapienzaTavolo, Zona } from "@/lib/prenotazioni-config";
 import { Prenotazione, TavoloInfo } from "@/types/prenotazioni";
-import { EventSeat, People, PersonAdd } from "@mui/icons-material";
-import {
-  Box,
-  Card,
-  CardActionArea,
-  CardContent,
-  Chip,
-  Divider,
-  Typography,
-} from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import React, { useMemo } from "react";
 
 interface TableCardProps {
@@ -47,18 +38,11 @@ export const TableCard: React.FC<TableCardProps> = ({
     };
   }, [zona, numeroTavolo, prenotazioni]);
 
-  const getStatusColor = () => {
-    if (tavoloInfo.posti_disponibili === 0) return "error.main";
+  const getTableColor = () => {
+    if (tavoloInfo.posti_disponibili === 0) return "#f44336"; // Rosso - Completo
     if (tavoloInfo.posti_disponibili < tavoloInfo.capienza / 2)
-      return "warning.main";
-    return "success.main";
-  };
-
-  const getStatusLabel = () => {
-    if (tavoloInfo.posti_disponibili === 0) return "Completo";
-    if (tavoloInfo.posti_disponibili < tavoloInfo.capienza / 2)
-      return "Quasi Pieno";
-    return "Disponibile";
+      return "#ff9800"; // Arancione - Quasi pieno
+    return "#4caf50"; // Verde - Disponibile
   };
 
   const handleClick = () => {
@@ -70,106 +54,146 @@ export const TableCard: React.FC<TableCardProps> = ({
   };
 
   return (
-    <Card
+    <Box
       sx={{
-        height: "100%",
-        border: 2,
-        borderColor: getStatusColor(),
-        transition: "all 0.2s",
-        "&:hover": {
-          boxShadow: 6,
-          transform: "translateY(-4px)",
-        },
+        position: "relative",
+        width: "100%",
+        height: 200,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
-      <CardActionArea
+      {/* Tavolo rettangolare visto dall'alto */}
+      <Box
         onClick={handleClick}
-        disabled={
-          tavoloInfo.posti_disponibili === 0 && prenotazioni.length === 0
-        }
-        sx={{ height: "100%" }}
+        sx={{
+          position: "relative",
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor:
+            tavoloInfo.posti_disponibili > 0 || prenotazioni.length > 0
+              ? "pointer"
+              : "default",
+          transition: "all 0.3s ease",
+          "&:hover": {
+            transform: "translateY(-4px) scale(1.02)",
+          },
+          opacity:
+            tavoloInfo.posti_disponibili === 0 && prenotazioni.length === 0
+              ? 0.6
+              : 1,
+        }}
       >
-        <CardContent>
-          {/* Header con numero tavolo */}
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            mb={2}
+        {/* Tavolo rettangolare */}
+        <Box
+          sx={{
+            width: 120,
+            height: 60,
+            backgroundColor: getTableColor(),
+            borderRadius: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            position: "relative",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+            "&::before": {
+              content: '""',
+              position: "absolute",
+              width: "100%",
+              height: "100%",
+              borderRadius: 1,
+              background: `linear-gradient(45deg, ${getTableColor()}80, ${getTableColor()})`,
+              zIndex: 1,
+            },
+          }}
+        >
+          {/* Sedie attorno al tavolo rettangolare */}
+          {Array.from({ length: Math.min(tavoloInfo.capienza, 8) }, (_, i) => {
+            // Posizionamento delle sedie attorno al tavolo rettangolare
+            const positions = [
+              { x: -15, y: 0 }, // Sinistra
+              { x: 15, y: 0 }, // Destra
+              { x: 0, y: -15 }, // Sopra
+              { x: 0, y: 15 }, // Sotto
+              { x: -10, y: -10 }, // Angolo alto-sinistra
+              { x: 10, y: -10 }, // Angolo alto-destra
+              { x: -10, y: 10 }, // Angolo basso-sinistra
+              { x: 10, y: 10 }, // Angolo basso-destra
+            ];
+
+            const pos = positions[i] || { x: 0, y: 0 };
+
+            return (
+              <Box
+                key={i}
+                sx={{
+                  position: "absolute",
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  backgroundColor:
+                    i < tavoloInfo.posti_occupati ? "#9c27b0" : "#ccc",
+                  border: "1px solid #333",
+                  left: `calc(50% + ${pos.x}px)`,
+                  top: `calc(50% + ${pos.y}px)`,
+                  transform: "translate(-50%, -50%)",
+                  zIndex: 2,
+                }}
+              />
+            );
+          })}
+
+          {/* Numero tavolo al centro */}
+          <Typography
+            variant="h6"
+            fontWeight="bold"
+            sx={{
+              color: "white",
+              zIndex: 3,
+              textShadow: "0 1px 2px rgba(0,0,0,0.5)",
+            }}
           >
-            <Box display="flex" alignItems="center" gap={1}>
-              <EventSeat fontSize="large" color="primary" />
-              <Typography variant="h5" fontWeight="bold">
-                Tavolo {numeroTavolo}
-              </Typography>
-            </Box>
-            <Chip
-              label={getStatusLabel()}
-              color={(() => {
-                if (tavoloInfo.posti_disponibili === 0) return "error";
-                if (tavoloInfo.posti_disponibili < tavoloInfo.capienza / 2)
-                  return "warning";
-                return "success";
-              })()}
-              size="small"
-            />
-          </Box>
+            {numeroTavolo}
+          </Typography>
+        </Box>
 
-          <Divider sx={{ mb: 2 }} />
-
-          {/* Info posti */}
-          <Box display="flex" flexDirection="column" gap={1}>
-            <Box display="flex" alignItems="center" gap={1}>
-              <People fontSize="small" color="action" />
-              <Typography variant="body2" color="text.secondary">
-                Capienza: <strong>{tavoloInfo.capienza}</strong> posti
-              </Typography>
-            </Box>
-
-            <Box display="flex" alignItems="center" gap={1}>
-              <PersonAdd fontSize="small" color="action" />
-              <Typography variant="body2" color="text.secondary">
-                Disponibili:{" "}
-                <strong
-                  style={{
-                    color:
-                      tavoloInfo.posti_disponibili === 0 ? "red" : "inherit",
-                  }}
-                >
-                  {tavoloInfo.posti_disponibili}
-                </strong>{" "}
-                posti
-              </Typography>
-            </Box>
-
-            {prenotazioni.length > 0 && (
-              <Box mt={1}>
-                <Typography variant="caption" color="primary" fontWeight="bold">
-                  {prenotazioni.length} prenotazion
-                  {prenotazioni.length === 1 ? "e" : "i"}
-                </Typography>
-              </Box>
-            )}
-          </Box>
-
-          {/* Azione suggerita */}
-          <Box mt={2}>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ fontStyle: "italic" }}
-            >
-              {(() => {
-                if (prenotazioni.length > 0)
-                  return "Clicca per visualizzare prenotazioni";
-                if (tavoloInfo.posti_disponibili > 0)
-                  return "Clicca per aggiungere prenotazione";
-                return "Tavolo completo";
-              })()}
-            </Typography>
-          </Box>
-        </CardContent>
-      </CardActionArea>
-    </Card>
+        {/* Info capienza e disponibilità */}
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: 8,
+            left: 8,
+            right: 8,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            backgroundColor: "rgba(255,255,255,0.9)",
+            borderRadius: 1,
+            px: 1,
+            py: 0.5,
+          }}
+        >
+          <Typography variant="caption" fontWeight="bold">
+            Capienza: {tavoloInfo.capienza}
+          </Typography>
+          <Typography
+            variant="caption"
+            fontWeight="bold"
+            sx={{
+              color:
+                tavoloInfo.posti_disponibili === 0
+                  ? "error.main"
+                  : "success.main",
+            }}
+          >
+            Disponibili: {tavoloInfo.posti_disponibili}
+          </Typography>
+        </Box>
+      </Box>
+    </Box>
   );
 };
