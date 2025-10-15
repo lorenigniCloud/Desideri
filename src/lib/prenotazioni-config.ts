@@ -24,23 +24,23 @@ export const ZONE_CONFIG: Record<Zona, { tavoli: number; capienze: number[] }> =
   {
     cantinella: {
       tavoli: 3,
-      capienze: [6, 6, 4], // Tavolo 1: 6 posti, Tavolo 2: 6 posti, Tavolo 3: 4 posti
+      capienze: [10, 10, 10], // Tavolo 1: 6 posti, Tavolo 2: 6 posti, Tavolo 3: 4 posti
     },
     cantina: {
       tavoli: 3,
-      capienze: [8, 6, 6],
+      capienze: [10, 10, 10],
     },
     pergola: {
       tavoli: 3,
-      capienze: [10, 8, 6],
+      capienze: [10, 10, 10],
     },
     arco: {
       tavoli: 3,
-      capienze: [6, 6, 4],
+      capienze: [10, 10, 10],
     },
     piazzetta: {
       tavoli: 2,
-      capienze: [8, 8],
+      capienze: [10, 10],
     },
   };
 
