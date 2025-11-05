@@ -52,7 +52,7 @@ function PrenotazioniContent() {
   } = usePrenotazioniByGiornoTurno(selectedGiorno, selectedTurno);
 
   // Giorni disponibili specifici per il 2025
-  const giorniDisponibili = useMemo(() => {
+  const giorniDisponibiliDeh = useMemo(() => {
     return [
       "2025-10-17",
       "2025-10-18",
@@ -151,7 +151,7 @@ function PrenotazioniContent() {
                 <MenuItem value="">
                   <em>Seleziona un giorno</em>
                 </MenuItem>
-                {giorniDisponibili.map((giorno) => (
+                {giorniDisponibiliDeh.map((giorno) => (
                   <MenuItem key={giorno} value={giorno}>
                     {formatDate(giorno)}
                   </MenuItem>
